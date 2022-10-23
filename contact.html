@@ -9,7 +9,7 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 	<link rel="stylesheet" href="style.css">
 	<title>Dodeka Sport</title>
-    <link rel="shortcut icon" href="Afbeeldingen\Logo met kantjes klein.png" type="image/gif">
+	<link rel="shortcut icon" href="Afbeeldingen\Logo met kantjes klein.png" type="image/gif">
 </head>
 
 <body>
@@ -50,7 +50,43 @@
 		</div>
 	</nav>
 
-    <section>
+	<section>
+		<div class="mt-3 mb-3 container">
+			<h1 style="color:#a00a30">
+				Onze gegevens
+			</h1>
+			<h3 style="color:#a00a30">Adres</h3>
+			<p>Onze thuismatchen spelen we in het befaamde "De Troetsel stadium" te Niel.</p>
+			<div class="mapouter">
+				<div class="gmap_canvas"><iframe width="600" height="500" id="gmap_canvas"
+						src="https://maps.google.com/maps?q=bart%20de%20troetsel%20stadion&t=&z=15&ie=UTF8&iwloc=&output=embed"
+						frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe><br><br>
+					<style>
+						.mapouter {
+							position: relative;
+							text-align: right;
+							height: 500px;
+							width: 600px;
+						}
+					</style><a href="https://www.embedgooglemap.net"></a>
+					<style>
+						.gmap_canvas {
+							overflow: hidden;
+							background: none !important;
+							height: 500px;
+							width: 600px;
+						}
+					</style>
+				</div>
+			</div>
+			<h3 class="mt-3" style="color:#a00a30">Contact</h3>
+				<p> <strong>Secretariaat:</strong> Vergult Vince <br>	
+					<strong>Tel:</strong> +32 472 23 36 76 <br>
+					<strong>E-mail:</strong> Vergult.vince@gmail.com</p>
+		</div>
+	</section>
+
+	<section>
 		<div class=" mt-3 mb-3 container">
 			<h1 style="color:#a00a30">
 				Contacteer ons hier:
@@ -58,31 +94,36 @@
 		</div>
 		<div class="container">
 			<form class="was-validated" method="POST">
-				
+
 				<div class="mb-3">
 					<label for="validationServer01" class="form-label">Vul hier je naam in:</label>
-					<input type="text" class="form-control is-valid" id="validationServer01" placeholder="naam" name ="name" required>
+					<input type="text" class="form-control is-valid" id="validationServer01" placeholder="naam"
+						name="name" required>
 				</div>
-				 <div class="mb-3">
+				<div class="mb-3">
 					<label for="validationServer02" class="form-label">Vul hier je e-mail adres in:</label>
-					<input type="text" class="form-control is-valid" id="validationServer02" placeholder="e-mail" name="email" required>
+					<input type="text" class="form-control is-valid" id="validationServer02" placeholder="e-mail"
+						name="email" required>
 				</div>
 				<div class="mb-3">
-					<label for="validationServer03" class="form-label">Laat ons weten waarvoor je ons contacteert:</label>
-					<textarea class="form-control" id="validationServer03" placeholder="Vul hier iets in" name="message" required></textarea>
-				</div>				
+					<label for="validationServer03" class="form-label">Laat ons weten waarvoor je ons
+						contacteert:</label>
+					<textarea class="form-control" id="validationServer03" placeholder="Vul hier iets in" name="message"
+						required></textarea>
+				</div>
 				<div class="mb-3">
-					<button class="btn btn-danger" type="submit" value="submit" disabled >(Binnenkort mogelijk)</button>
+					<button class="btn btn-danger" type="submit" value="submit" disabled>(Binnenkort mogelijk)</button>
 				</div>
 			</form>
 		</div>
 	</section>
 
 	<!-- footer -->
-	<footer class="p-1 text-center fixed-bottom">
-        <div class="container">
-			<a href="https://facebook.com/dodekasport" target=”_blank”><img src="Afbeeldingen\Facebook_logo.svg" alt="https://facebook.com/dodekasport"></a>
-			
+	<footer class="p-1 mt-3 text-center footer-fixed-bottom">
+		<div class="container">
+			<a href="https://facebook.com/dodekasport" target=”_blank”><img src="Afbeeldingen\Facebook_logo.svg"
+					alt="https://facebook.com/dodekasport"></a>
+
 
 			<p class="lead">
 				Copyright &copy; 2022 Dodeka
