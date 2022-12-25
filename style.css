@@ -17,6 +17,7 @@ body { padding-top: 30px; }
 
 .card {
     margin-top: 0px;
+    border-color: white
 }
 
 .card-img-top {
