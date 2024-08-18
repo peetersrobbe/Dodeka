@@ -135,3 +135,13 @@ body { padding-top: 30px; }
   height: 30vw;
   object-fit: cover;
 }
+
+.grote-afbeelding {
+  width: 40vw;  /* 40% van de breedte van het scherm */
+  height: auto; /* 40% van de hoogte van het scherm */
+  object-fit: cover; /* Zorgt ervoor dat de afbeelding het volledige frame vult zonder vervorming */
+  display: block; /* Voor centreren */
+  margin-left: auto; /* Voor centreren */
+  margin-right: auto; /* Voor centreren */
+  cursor: pointer; /* Verandert de cursor naar een handje, zodat duidelijk is dat het klikbaar is */
+}
