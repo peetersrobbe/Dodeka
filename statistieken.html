@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YGH4PRHD3B"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-YGH4PRHD3B');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <title>Statistieken – Dodeka Sport</title>
+  <link rel="shortcut icon" href="Afbeeldingen/Logo met kantjes klein.png" type="image/gif">
+
+  <style>
+    .stat-badge          { font-size: .8rem; padding: .25em .55em; }
+    .table thead th      { background-color: #a00a30; color: #fff; border-color: #8a0828; white-space: nowrap; }
+    .table-hover tbody tr:hover { background-color: #fdf0f3; }
+    .score-win           { color: #198754; font-weight: 700; }
+    .score-draw          { color: #fd7e14; font-weight: 700; }
+    .score-loss          { color: #dc3545; font-weight: 700; }
+    .standing-highlight  { background-color: #fff3cd !important; font-weight: 700; }
+    .section-title       { border-left: 4px solid #a00a30; padding-left: .75rem; margin-bottom: 1.25rem; }
+    .season-btn.active   { background-color: #a00a30 !important; border-color: #a00a30 !important; }
+    .login-indicator     { font-size: .85rem; }
+    #spinner             { display: none; }
+    .sortable            { cursor: pointer; user-select: none; }
+    .sortable:hover      { background-color: #8a0828 !important; }
+    .sort-icon           { font-size: .7rem; }
+  </style>
+</head>
+<body>
+
+<!-- ── Auth gate: hides page until login is confirmed ── -->
+<div id="auth-gate" style="
+  position:fixed; inset:0; z-index:9999;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:12px;">
+  <div class="spinner-border" style="color:#a00a30; width:2.5rem; height:2.5rem;"></div>
+  <p class="text-muted mb-0">Aanmelden controleren…</p>
+</div>
+
+<!-- ── Navbar ── -->
+<nav class="navbar navbar-custom navbar-dark navbar-expand-xl py-3 fixed-top text-light">
+  <div class="container">
+    <a href="index.html" class="navbar-brand"><h1>DODEKA.</h1></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navmenu">
+      <ul class="navbar-nav ms-auto align-items-xl-center">
+        <li class="nav-item"><a href="index.html"         class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="historie.html"      class="nav-link">Historie</a></li>
+        <li class="nav-item"><a href="spelers.html"       class="nav-link">Spelers</a></li>
+        <li class="nav-item"><a href="statistieken.html"  class="nav-link active fw-bold">Statistieken</a></li>
+        <li class="nav-item"><a href="sponsors.html"      class="nav-link">Sponsors</a></li>
+        <li class="nav-item"><a href="bestuur.html"       class="nav-link">Bestuur</a></li>
+        <li class="nav-item"><a href="HallOfFame.html"    class="nav-link">Hall of Fame</a></li>
+        <li class="nav-item"><a href="contact.html"       class="nav-link">Contact</a></li>
+        <li class="nav-item"><a href="nieuws.html"        class="nav-link">Nieuws</a></li>
+        <li class="nav-item ms-xl-3" id="nav-auth">
+          <a href="login.html" class="btn btn-outline-light btn-sm">Inloggen</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Page header ── -->
+<section class="pt-3 pb-2">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="mb-0">Statistieken</h2>
+        <p class="text-muted mb-0">Dodeka Sport – Tweede Afdeling B</p>
+      </div>
+      <div id="spinner" class="text-muted">
+        <span class="spinner-border spinner-border-sm me-1"></span> Laden…
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Season selector ── -->
+<section class="py-2 border-bottom">
+  <div class="container">
+    <div id="season-buttons" class="d-flex flex-wrap gap-2"></div>
+    <div id="db-error-msg" class="alert alert-warning mt-2 d-none">
+      <strong>Geen data gevonden.</strong>
+      Heb je al <code>seed_data.sql</code> uitgevoerd in Supabase? Ga naar
+      <strong>SQL Editor → New query</strong>, plak de inhoud van
+      <code>supabase/seed_data.sql</code> en klik <strong>Run</strong>.
+    </div>
+  </div>
+</section>
+
+<!-- ── Main content ── -->
+<section class="py-4">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- LEFT: stats + matches -->
+      <div class="col-lg-8">
+
+        <!-- Player stats table -->
+        <h5 class="section-title">Spelersstatistieken</h5>
+        <div class="table-responsive mb-5">
+          <table class="table table-hover table-bordered align-middle mb-0" id="stats-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-col="naam">Naam <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="aanwezig" title="Aanwezigheid">✓ <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="doelpunten" title="Doelpunten">⚽ <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="assists"    title="Assists">🅰 <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="gele_kaarten" title="Gele kaarten">🟡 <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="rode_kaarten" title="Rode kaarten">🔴 <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="motm"       title="Man of the Match">⭐ <span class="sort-icon">↕</span></th>
+              </tr>
+            </thead>
+            <tbody id="stats-tbody">
+              <tr><td colspan="7" class="text-center text-muted py-4">Seizoen laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Match results -->
+        <h5 class="section-title">Wedstrijden</h5>
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Tegenstander</th>
+                <th class="text-center">Score</th>
+                <th class="text-center">T/U</th>
+                <th class="text-center">Uitslag</th>
+                <th id="matches-actions-th" class="text-center d-none"></th>
+              </tr>
+            </thead>
+            <tbody id="matches-tbody">
+              <tr><td colspan="5" class="text-center text-muted py-4">Laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: standings -->
+      <div class="col-lg-4">
+        <h5 class="section-title">Klassement – 2e Afdeling B</h5>
+        <div id="standings-container">
+          <p class="text-muted small">Laden…</p>
+        </div>
+        <p class="text-muted" style="font-size:.75rem;">
+          Bron: <a href="https://klassement.vriendenclubsantwerpen.be" target="_blank" rel="noopener">vriendenclubsantwerpen.be</a>
+          <br>Automatisch bijgewerkt via GitHub Actions.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="p-1 text-center footer-fixed-bottom">
+  <div class="container">
+    <a href="https://facebook.com/dodekasport" target="_blank">
+      <svg width="16" height="16" class="bi bi-facebook" viewBox="0 0 16 16">
+        <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
+      </svg>
+    </a>
+    <a href="https://instagram.com/dodekasport" target="_blank" class="ms-2">
+      <svg width="16" height="16" class="bi bi-instagram" viewBox="0 0 16 16">
+        <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/>
+      </svg>
+    </a>
+    <p class="lead" style="font-size:11px;">Copyright &copy; 2024 Dodeka</p>
+  </div>
+</footer>
+
+<!-- ── Floating admin buttons (admins only) ── -->
+<div id="admin-fab" style="display:none; position:fixed; bottom:28px; right:24px; z-index:1040;">
+  <div class="d-flex flex-column gap-2 align-items-end">
+    <button class="btn btn-secondary shadow fw-bold px-3 py-2"
+            style="border-radius:50px; font-size:.88rem;"
+            data-bs-toggle="offcanvas" data-bs-target="#playersPanel">
+      👥 Spelers
+    </button>
+    <button class="btn btn-warning shadow fw-bold px-4 py-2"
+            style="border-radius:50px; font-size:.95rem;"
+            data-bs-toggle="offcanvas" data-bs-target="#gamePanel">
+      ⚡ Na wedstrijd
+    </button>
+  </div>
+</div>
+
+<!-- ── Players management offcanvas ── -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="playersPanel"
+     style="width:min(420px,100vw); display:flex; flex-direction:column;">
+  <div class="offcanvas-header" style="background:#495057; color:#fff; flex-shrink:0;">
+    <h5 class="offcanvas-title">👥 Spelers beheren</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body p-3" style="overflow-y:auto; flex:1;">
+    <p class="text-muted small mb-3">Actieve spelers verschijnen in het "Na wedstrijd" paneel. Inactieve spelers worden verborgen maar hun statistieken blijven bewaard.</p>
+    <div id="pl-list">
+      <div class="text-center py-3"><span class="spinner-border spinner-border-sm"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Post-game offcanvas panel ── -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="gamePanel"
+     style="width:min(500px,100vw); display:flex; flex-direction:column;">
+  <div class="offcanvas-header" style="background:#a00a30; color:#fff; flex-shrink:0;">
+    <h5 class="offcanvas-title">⚡ Na de wedstrijd</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <!-- Scrollable body -->
+  <div class="offcanvas-body p-3" style="overflow-y:auto; flex:1;">
+
+    <!-- Match + score -->
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Wedstrijd</label>
+      <select id="gu-match" class="form-select mb-2" onchange="guLoadMatchData()"></select>
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Score:</label>
+        <div class="text-center">
+          <div id="gu-label-left" class="text-muted" style="font-size:.68rem;line-height:1.2;">Dodeka</div>
+          <input type="number" id="gu-score-left" class="form-control form-control-sm text-center"
+                 style="width:62px" min="0" placeholder="–">
+        </div>
+        <span class="fw-bold fs-5">–</span>
+        <div class="text-center">
+          <div id="gu-label-right" class="text-muted" style="font-size:.68rem;line-height:1.2;" ></div>
+          <input type="number" id="gu-score-right" class="form-control form-control-sm text-center"
+                 style="width:62px" min="0" placeholder="–">
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Locatie:</label>
+        <div class="btn-group btn-group-sm">
+          <button type="button" id="gu-thuis-btn" class="btn btn-primary"
+                  onclick="guSetThuis(true)">🏠 Thuis</button>
+          <button type="button" id="gu-uit-btn" class="btn btn-outline-secondary"
+                  onclick="guSetThuis(false)">🚌 Uit</button>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-2">
+
+    <!-- Combined attendance + stats table -->
+    <p class="fw-semibold mb-2">Aanwezigheid &amp; statistieken</p>
+    <div id="gu-table" class="mb-3"></div>
+
+  </div>
+
+  <!-- Sticky save button -->
+  <div class="p-3 border-top bg-white" style="flex-shrink:0;">
+    <button class="btn w-100 fw-bold" style="background:#a00a30;color:#fff;"
+            onclick="guSaveAll()">
+      <span id="gu-spinner" class="spinner-border spinner-border-sm d-none me-2"></span>
+      💾 Alles opslaan
+    </button>
+    <div id="gu-msg" class="alert mt-2 d-none p-2 small"></div>
+  </div>
+</div>
+
+<!-- ── Scripts ── -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+<!-- Supabase JS v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/stats.js"></script>
+</body>
+</html>

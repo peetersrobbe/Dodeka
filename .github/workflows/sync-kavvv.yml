@@ -1,0 +1,38 @@
+# ============================================================
+# DODEKA SPORT – KAVVV Auto-Sync Workflow
+# Scrapes uitslagen.vriendenclubsantwerpen.be every Sunday
+# at 22:00 and updates the Supabase database with the latest
+# standings and match results for Tweede Afdeling B.
+#
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   SUPABASE_URL             – your project URL
+#   SUPABASE_SERVICE_ROLE_KEY – service role key (NOT the anon key!)
+# ============================================================
+
+name: Sync KAVVV Data
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'   # Every Sunday at 22:00 UTC
+  workflow_dispatch:         # Allow manual trigger from GitHub UI
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 supabase
+
+      - name: Run KAVVV scraper
+        env:
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/sync_kavvv.py

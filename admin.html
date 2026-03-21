@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <title>Beheer – Dodeka Sport</title>
+  <link rel="shortcut icon" href="Afbeeldingen/Logo met kantjes klein.png" type="image/gif">
+  <style>
+    .sidebar        { min-height: calc(100vh - 80px); background: #f8f9fa; border-right: 1px solid #dee2e6; }
+    .nav-pills .nav-link.active { background-color: #a00a30; }
+    .nav-pills .nav-link        { color: #333; }
+    .section-header { background: #a00a30; color: #fff; padding: .5rem 1rem; border-radius: .25rem; margin-bottom: 1rem; }
+    .btn-dodeka     { background-color: #a00a30; border-color: #a00a30; color: #fff; }
+    .btn-dodeka:hover { background-color: #8a0828; border-color: #8a0828; color: #fff; }
+    .aanw-btn       { width: 38px; height: 38px; font-size: .8rem; }
+    .aanw-btn.aanwezig        { background: #198754; color: #fff; border-color: #198754; }
+    .aanw-btn.afwezig         { background: #dc3545; color: #fff; border-color: #dc3545; }
+    .aanw-btn.verontschuldigd { background: #fd7e14; color: #fff; border-color: #fd7e14; }
+    #toast-container { position: fixed; top: 90px; right: 20px; z-index: 9999; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-custom navbar-dark navbar-expand-lg py-3 fixed-top text-light">
+  <div class="container-fluid">
+    <a href="index.html" class="navbar-brand"><h1>DODEKA.</h1></a>
+    <span class="text-white-50 ms-2 d-none d-lg-inline">Beheer</span>
+    <div class="ms-auto">
+      <a href="statistieken.html" class="btn btn-outline-light btn-sm me-2">← Stats</a>
+      <button onclick="signOut()" class="btn btn-outline-light btn-sm">Uitloggen</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Toast notifications -->
+<div id="toast-container"></div>
+
+<!-- Main layout -->
+<div class="container-fluid mt-2">
+  <div class="row">
+
+    <!-- Sidebar -->
+    <div class="col-lg-2 col-md-3 sidebar py-4 d-none d-md-block">
+      <nav class="nav nav-pills flex-column gap-1" id="admin-nav">
+        <a class="nav-link active" href="#" onclick="showSection('wedstrijden')">⚽ Wedstrijden</a>
+        <a class="nav-link"        href="#" onclick="showSection('stats')">📊 Match-stats</a>
+        <a class="nav-link"        href="#" onclick="showSection('spelers')">👤 Spelers</a>
+        <a class="nav-link"        href="#" onclick="showSection('seizoenen')">📅 Seizoenen</a>
+      </nav>
+    </div>
+
+    <!-- Mobile nav -->
+    <div class="col-12 d-md-none py-2 border-bottom">
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-sm btn-dodeka" onclick="showSection('wedstrijden')">Wedstrijden</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="showSection('stats')">Stats</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="showSection('spelers')">Spelers</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="showSection('seizoenen')">Seizoenen</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="col-lg-10 col-md-9 py-4 px-4">
+      <div id="loading-overlay" class="text-center py-5">
+        <div class="spinner-border text-danger"></div>
+        <p class="mt-2">Bezig met laden…</p>
+      </div>
+
+      <!-- ── WEDSTRIJDEN ── -->
+      <div id="section-wedstrijden" class="admin-section d-none">
+        <div class="section-header d-flex justify-content-between align-items-center">
+          <span>⚽ Wedstrijden beheren</span>
+          <button class="btn btn-sm btn-light" onclick="openMatchModal()">+ Nieuwe wedstrijd</button>
+        </div>
+
+        <!-- Season filter -->
+        <div class="mb-3 d-flex gap-2 align-items-center flex-wrap">
+          <label class="form-label mb-0 fw-semibold">Seizoen:</label>
+          <select id="match-season-filter" class="form-select form-select-sm w-auto" onchange="loadMatchesAdmin()"></select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-hover table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th>Datum</th><th>Tegenstander</th><th>Score</th><th>T/U</th><th>Acties</th>
+              </tr>
+            </thead>
+            <tbody id="admin-matches-tbody">
+              <tr><td colspan="5" class="text-center text-muted">Laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── MATCH STATS ── -->
+      <div id="section-stats" class="admin-section d-none">
+        <div class="section-header">📊 Statistieken per wedstrijd invullen</div>
+        <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+          <label class="form-label mb-0 fw-semibold">Seizoen:</label>
+          <select id="stats-season-sel" class="form-select form-select-sm w-auto" onchange="loadMatchesForStats()"></select>
+          <label class="form-label mb-0 fw-semibold ms-2">Wedstrijd:</label>
+          <select id="stats-match-sel" class="form-select form-select-sm w-auto" onchange="loadMatchStats()"></select>
+        </div>
+
+        <div id="match-stats-form">
+          <p class="text-muted">Selecteer een wedstrijd om de statistieken in te vullen.</p>
+        </div>
+      </div>
+
+      <!-- ── SPELERS ── -->
+      <div id="section-spelers" class="admin-section d-none">
+        <div class="section-header d-flex justify-content-between align-items-center">
+          <span>👤 Spelers beheren</span>
+          <button class="btn btn-sm btn-light" onclick="openPlayerModal()">+ Nieuwe speler</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover table-bordered">
+            <thead class="table-dark">
+              <tr><th>#</th><th>Naam</th><th>Actief</th><th>Acties</th></tr>
+            </thead>
+            <tbody id="admin-players-tbody">
+              <tr><td colspan="4" class="text-center text-muted">Laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── SEIZOENEN ── -->
+      <div id="section-seizoenen" class="admin-section d-none">
+        <div class="section-header d-flex justify-content-between align-items-center">
+          <span>📅 Seizoenen beheren</span>
+          <button class="btn btn-sm btn-light" onclick="openSeasonModal()">+ Nieuw seizoen</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover table-bordered">
+            <thead class="table-dark">
+              <tr><th>Naam</th><th>Huidig</th><th>Acties</th></tr>
+            </thead>
+            <tbody id="admin-seasons-tbody">
+              <tr><td colspan="3" class="text-center text-muted">Laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── MODALS ─────────────────────────────────────────────────── -->
+
+<!-- Add/Edit Match Modal -->
+<div class="modal fade" id="matchModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#a00a30;color:#fff">
+        <h5 class="modal-title" id="matchModalTitle">Wedstrijd toevoegen</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="match-id">
+        <div class="mb-3">
+          <label class="form-label">Seizoen</label>
+          <select id="match-season" class="form-select" required></select>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Datum</label>
+            <input type="date" id="match-datum" class="form-control" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Tijdstip</label>
+            <input type="text" id="match-tijdstip" class="form-control" placeholder="15u00">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Tegenstander</label>
+          <input type="text" id="match-tegenstander" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Thuis of Uit?</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="thuisUit" id="is-thuis" value="true" checked>
+              <label class="form-check-label" for="is-thuis">Thuis</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="thuisUit" id="is-uit" value="false">
+              <label class="form-check-label" for="is-uit">Uit</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label class="form-label">Score Dodeka</label>
+            <input type="number" id="match-score-dodeka" class="form-control" min="0" placeholder="–">
+          </div>
+          <div class="col-6 mb-3">
+            <label class="form-label">Score Tegenstander</label>
+            <input type="number" id="match-score-teg" class="form-control" min="0" placeholder="–">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+        <button type="button" class="btn btn-dodeka" onclick="saveMatch()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Player Modal -->
+<div class="modal fade" id="playerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#a00a30;color:#fff">
+        <h5 class="modal-title">Speler toevoegen/bewerken</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="player-id">
+        <div class="mb-3">
+          <label class="form-label">Naam (ACHTERNAAM Voornaam)</label>
+          <input type="text" id="player-naam" class="form-control" required placeholder="VAN DEN BOSCH Robbe">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Rugnummer</label>
+          <input type="number" id="player-nummer" class="form-control" min="1">
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="player-active" checked>
+          <label class="form-check-label" for="player-active">Actieve speler</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+        <button type="button" class="btn btn-dodeka" onclick="savePlayer()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Season Modal -->
+<div class="modal fade" id="seasonModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#a00a30;color:#fff">
+        <h5 class="modal-title">Seizoen toevoegen</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="season-id">
+        <div class="mb-3">
+          <label class="form-label">Naam (bijv. 2026-2027)</label>
+          <input type="text" id="season-naam" class="form-control" required pattern="\d{4}-\d{4}" placeholder="2026-2027">
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="season-current">
+          <label class="form-check-label" for="season-current">Huidig seizoen</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+        <button type="button" class="btn btn-dodeka" onclick="saveSeason()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

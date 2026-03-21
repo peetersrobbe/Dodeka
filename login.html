@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YGH4PRHD3B"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date()); gtag('config', 'G-YGH4PRHD3B');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <title>Inloggen – Dodeka Sport</title>
+  <link rel="shortcut icon" href="Afbeeldingen/Logo met kantjes klein.png" type="image/gif">
+  <style>
+    .login-card { max-width: 420px; margin: 0 auto; }
+    .btn-dodeka { background-color: #a00a30; border-color: #a00a30; color: #fff; }
+    .btn-dodeka:hover { background-color: #8a0828; border-color: #8a0828; color: #fff; }
+    .tab-pane { padding-top: 1.5rem; }
+    .nav-tabs .nav-link.active { border-bottom-color: #a00a30; color: #a00a30; font-weight: 600; }
+    #msg { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-custom navbar-dark navbar-expand-lg py-3 fixed-top text-light">
+  <div class="container">
+    <a href="index.html" class="navbar-brand"><h1>DODEKA.</h1></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navmenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="index.html"        class="nav-link">Home</a></li>
+        <li class="nav-item"><a href="statistieken.html" class="nav-link">Statistieken</a></li>
+        <li class="nav-item"><a href="spelers.html"      class="nav-link">Spelers</a></li>
+        <li class="nav-item"><a href="bestuur.html"      class="nav-link">Bestuur</a></li>
+        <li class="nav-item"><a href="contact.html"      class="nav-link">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Login card -->
+<section class="py-5">
+  <div class="container">
+    <div class="login-card">
+      <div class="text-center mb-4">
+        <img src="Afbeeldingen/Logo met kantjes klein.png" alt="Dodeka" height="60">
+        <h4 class="mt-3">Dodeka Sport</h4>
+        <p class="text-muted small">Log in om de statistieken te bekijken.</p>
+      </div>
+
+      <!-- Alert -->
+      <div id="msg" class="alert" role="alert"></div>
+
+      <div class="border rounded p-4 bg-white shadow-sm">
+        <form id="login-form">
+          <div class="mb-3">
+            <label class="form-label">E-mailadres</label>
+            <input type="email" class="form-control" id="login-email" required placeholder="jouw@email.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Wachtwoord</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="login-password" required placeholder="••••••••">
+              <button class="btn btn-outline-secondary" type="button" onclick="togglePw('login-password')">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <small>
+              <a href="#" onclick="sendReset()" class="text-muted">Wachtwoord vergeten?</a>
+            </small>
+          </div>
+          <button type="submit" class="btn btn-dodeka w-100" id="login-btn">
+            <span id="login-spinner" class="spinner-border spinner-border-sm d-none me-2"></span>
+            Inloggen
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="p-1 text-center footer-fixed-bottom">
+  <div class="container">
+    <p class="lead mb-0" style="font-size:11px;">Copyright &copy; 2024 Dodeka</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/supabase-config.js"></script>
+<script>
+// Redirect if already logged in
+supabaseClient.auth.getUser().then(({ data: { user } }) => {
+  if (user) window.location.href = 'statistieken.html';
+});
+
+// ── Login ─────────────────────────────────────────────────────
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  setLoading('login', true);
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email:    document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-password').value,
+  });
+  setLoading('login', false);
+  if (error) showMsg(error.message, 'danger');
+  else window.location.href = 'statistieken.html';
+});
+
+// ── Password reset ────────────────────────────────────────────
+async function sendReset() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showMsg('Vul eerst je e-mailadres in.', 'warning'); return; }
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+  if (error) showMsg(error.message, 'danger');
+  else showMsg('Resetlink verstuurd naar ' + email, 'success');
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.className = `alert alert-${type}`;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+
+function setLoading(prefix, on) {
+  const btn = document.getElementById(`${prefix}-btn`);
+  const spinner = document.getElementById(`${prefix}-spinner`);
+  if (btn) btn.disabled = on;
+  if (spinner) spinner.classList.toggle('d-none', !on);
+}
+
+function togglePw(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+</script>
+</body>
+</html>
