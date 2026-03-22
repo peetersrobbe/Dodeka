@@ -43,11 +43,17 @@ function showSection(name) {
 async function loadSeasons() {
   const { data } = await supabaseClient.from('seasons').select('*').order('naam', { ascending: false });
   seasons = data || [];
+  const seasonOpts = seasons.map(s => `<option value="${s.id}">${s.naam}</option>`).join('');
   ['match-season', 'match-season-filter', 'stats-season-sel'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.innerHTML = seasons.map(s => `<option value="${s.id}">${s.naam}</option>`).join('');
+    el.innerHTML = seasonOpts;
   });
+  // Populate player modal season dropdowns
+  const startEl = document.getElementById('player-started-season');
+  const endEl   = document.getElementById('player-ended-season');
+  if (startEl) startEl.innerHTML = `<option value="">– altijd –</option>${seasonOpts}`;
+  if (endEl)   endEl.innerHTML   = `<option value="">– huidig –</option>${seasonOpts}`;
 }
 
 function renderSeasonsAdmin() {
@@ -118,6 +124,11 @@ function renderPlayersAdmin() {
     if (a.active !== b.active) return a.active ? -1 : 1;
     return a.naam.localeCompare(b.naam);
   });
+
+  const seasonOpts = (nullLabel, nullValue='') =>
+    `<option value="${nullValue}">${nullLabel}</option>` +
+    seasons.map(s => `<option value="${s.id}">${s.naam}</option>`).join('');
+
   tbody.innerHTML = sorted.map(p => `
     <tr class="${p.active ? '' : 'table-secondary text-muted'}">
       <td>${p.nummer || '–'}</td>
@@ -130,10 +141,31 @@ function renderPlayersAdmin() {
         </button>
       </td>
       <td>
+        <select class="form-select form-select-sm" style="min-width:110px"
+                onchange="updatePlayerSeason('${p.id}', 'started_season_id', this.value)">
+          ${seasonOpts('– altijd –').replace(`value="${p.started_season_id || ''}"`, `value="${p.started_season_id || ''}" selected`)}
+        </select>
+      </td>
+      <td>
+        <select class="form-select form-select-sm" style="min-width:110px"
+                onchange="updatePlayerSeason('${p.id}', 'ended_season_id', this.value)">
+          ${seasonOpts('– huidig –').replace(`value="${p.ended_season_id || ''}"`, `value="${p.ended_season_id || ''}" selected`)}
+        </select>
+      </td>
+      <td>
         <button class="btn btn-sm btn-outline-primary me-1" onclick="editPlayer('${p.id}')">✏</button>
         <button class="btn btn-sm btn-outline-danger" onclick="deletePlayer('${p.id}')">🗑</button>
       </td>
     </tr>`).join('');
+}
+
+async function updatePlayerSeason(id, field, value) {
+  await supabaseClient.from('players')
+    .update({ [field]: value || null })
+    .eq('id', id);
+  const p = players.find(x => x.id === id);
+  if (p) p[field] = value || null;
+  showToast('Seizoen opgeslagen.');
 }
 
 async function togglePlayerActive(id, currentlyActive) {
@@ -148,6 +180,8 @@ function openPlayerModal() {
   document.getElementById('player-naam').value = '';
   document.getElementById('player-nummer').value = '';
   document.getElementById('player-active').checked = true;
+  document.getElementById('player-started-season').value = '';
+  document.getElementById('player-ended-season').value   = '';
   playerModal.show();
 }
 
@@ -157,20 +191,26 @@ function editPlayer(id) {
   document.getElementById('player-naam').value = p.naam;
   document.getElementById('player-nummer').value = p.nummer || '';
   document.getElementById('player-active').checked = p.active;
+  document.getElementById('player-started-season').value = p.started_season_id || '';
+  document.getElementById('player-ended-season').value   = p.ended_season_id   || '';
   playerModal.show();
 }
 
 async function savePlayer() {
-  const id     = document.getElementById('player-id').value;
-  const naam   = document.getElementById('player-naam').value.trim();
-  const nummer = parseInt(document.getElementById('player-nummer').value) || null;
-  const active = document.getElementById('player-active').checked;
+  const id               = document.getElementById('player-id').value;
+  const naam             = document.getElementById('player-naam').value.trim();
+  const nummer           = parseInt(document.getElementById('player-nummer').value) || null;
+  const active           = document.getElementById('player-active').checked;
+  const started_season_id = document.getElementById('player-started-season').value || null;
+  const ended_season_id   = document.getElementById('player-ended-season').value   || null;
   if (!naam) return;
 
+  const payload = { naam, nummer, active, started_season_id, ended_season_id };
+
   if (id) {
-    await supabaseClient.from('players').update({ naam, nummer, active }).eq('id', id);
+    await supabaseClient.from('players').update(payload).eq('id', id);
   } else {
-    await supabaseClient.from('players').insert({ naam, nummer, active });
+    await supabaseClient.from('players').insert(payload);
   }
   playerModal.hide();
   await loadPlayers();

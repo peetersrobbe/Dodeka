@@ -41,7 +41,10 @@ async function checkAuthState(user) {
     user = u;
   }
   const navAuth = document.getElementById('nav-auth');
-  if (!user) return;
+  if (!user) {
+    navAuth.innerHTML = `<a href="login.html" class="btn btn-outline-light btn-sm">Inloggen</a>`;
+    return;
+  }
 
   const { data: adminRow } = await supabaseClient
     .from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
@@ -138,8 +141,8 @@ async function loadStats(seasonId) {
 
   // Step 2: all stat tables in parallel (fast – no complex joins)
   const [playersRes, aanwRes, doelRes, assRes, kaartRes, motmRes] = await Promise.all([
-    supabaseClient.from('players').select('id, naam, nummer').eq('active', true).order('naam'),
-    supabaseClient.from('aanwezigheid').select('player_id, status').in('match_id', matchIds),
+    supabaseClient.from('players').select('id, naam, nummer, started_season_id, ended_season_id').order('naam'),
+    supabaseClient.from('aanwezigheid').select('player_id, status, is_keeper').in('match_id', matchIds),
     supabaseClient.from('doelpunten').select('player_id, aantal').in('match_id', matchIds),
     supabaseClient.from('assists').select('player_id, aantal').in('match_id', matchIds),
     supabaseClient.from('kaarten').select('player_id, geel, rood').in('match_id', matchIds),
@@ -152,19 +155,44 @@ async function loadStats(seasonId) {
   const kaart = kaartRes.data || [];
   const motm  = motmRes.data  || [];
 
+  // Helper: get season naam by id from allSeasons
+  const seasonNaam = id => allSeasons.find(s => s.id === id)?.naam || null;
+
+  // Filter players active in this season:
+  // started_season is null OR started_season.naam <= currentSeason.naam
+  // AND ended_season is null OR currentSeason.naam <= ended_season.naam
+  const currentNaam = currentSeason.naam;
+  const seasonPlayers = (playersRes.data || []).filter(p => {
+    const startNaam = seasonNaam(p.started_season_id);
+    const endNaam   = seasonNaam(p.ended_season_id);
+    const startOk = !p.started_season_id || (startNaam !== null && startNaam <= currentNaam);
+    const endOk   = !p.ended_season_id   || (endNaam   !== null && currentNaam <= endNaam);
+    return startOk && endOk;
+  });
+
   // Step 3: aggregate per player in JS
-  statsData = (playersRes.data || []).map(p => ({
-    player_id:            p.id,
-    naam:                 p.naam,
-    nummer:               p.nummer,
-    wedstrijden_gespeeld: matchIds.length,
-    aanwezig:             aanw.filter(r => r.player_id === p.id && ['volledig','gewisseld','toeschouwer','aanwezig'].includes(r.status)).length,
-    doelpunten:           doelen.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.aantal || 0), 0),
-    assists:              ass.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.aantal || 0), 0),
-    gele_kaarten:         kaart.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.geel  || 0), 0),
-    rode_kaarten:         kaart.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.rood  || 0), 0),
-    motm:                 motm.filter(r => r.player_id === p.id).length,
-  })).filter(p => p.aanwezig > 0 || p.doelpunten > 0 || p.assists > 0 || p.motm > 0 || p.gele_kaarten > 0 || p.rode_kaarten > 0);
+  statsData = seasonPlayers.map(p => {
+    const volledig   = aanw.filter(r => r.player_id === p.id && r.status === 'volledig').length;
+    const gewisseld  = aanw.filter(r => r.player_id === p.id && r.status === 'gewisseld').length;
+    const gespeeld   = volledig + gewisseld;  // games actually on the pitch
+    const aanwezig   = gespeeld + aanw.filter(r => r.player_id === p.id && ['toeschouwer','aanwezig'].includes(r.status)).length;
+    return {
+      player_id:            p.id,
+      naam:                 p.naam,
+      nummer:               p.nummer,
+      wedstrijden_gespeeld: matchIds.length,
+      aanwezig,
+      gewisseld,
+      gespeeld,
+      wissel_pct:           gespeeld > 0 ? Math.round(gewisseld / gespeeld * 100) : null,
+      doelpunten:           doelen.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.aantal || 0), 0),
+      assists:              ass.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.aantal || 0), 0),
+      gele_kaarten:         kaart.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.geel  || 0), 0),
+      rode_kaarten:         kaart.filter(r => r.player_id === p.id).reduce((s, r) => s + (r.rood  || 0), 0),
+      motm:                 motm.filter(r => r.player_id === p.id).length,
+      keeper:               aanw.filter(r => r.player_id === p.id && r.is_keeper).length,
+    };
+  }).filter(p => p.aanwezig > 0 || p.doelpunten > 0 || p.assists > 0 || p.motm > 0 || p.gele_kaarten > 0 || p.rode_kaarten > 0);
 
   renderStats();
 }
@@ -172,7 +200,7 @@ async function loadStats(seasonId) {
 function renderStats() {
   const tbody = document.getElementById('stats-tbody');
   if (!statsData.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Geen data voor dit seizoen.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Geen data voor dit seizoen.</td></tr>';
     return;
   }
 
@@ -182,18 +210,27 @@ function renderStats() {
     return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
   });
 
-  tbody.innerHTML = sorted.map(p => `
-    <tr>
+  tbody.innerHTML = sorted.map(p => {
+    const wPct = p.wissel_pct !== null ? `${p.wissel_pct}%` : '–';
+    const wColor = p.wissel_pct !== null
+      ? (p.wissel_pct >= 50 ? '#dc3545' : p.wissel_pct >= 25 ? '#fd7e14' : '#6c757d')
+      : '';
+    return `<tr>
       <td>${p.naam}</td>
       <td class="text-center">
         <span class="badge bg-success stat-badge">${p.aanwezig}</span>
+      </td>
+      <td class="text-center">
+        <span class="text-muted" style="font-size:.8rem;${wColor ? `color:${wColor}!important;font-weight:600` : ''}">${wPct}</span>
       </td>
       <td class="text-center fw-bold">${p.doelpunten || 0}</td>
       <td class="text-center">${p.assists || 0}</td>
       <td class="text-center">${p.gele_kaarten ? `<span class="badge text-dark stat-badge" style="background:#ffc107">${p.gele_kaarten}</span>` : '–'}</td>
       <td class="text-center">${p.rode_kaarten ? `<span class="badge bg-danger stat-badge">${p.rode_kaarten}</span>` : '–'}</td>
       <td class="text-center">${p.motm ? `<span class="badge stat-badge" style="background:#a00a30">⭐ ${p.motm}</span>` : '–'}</td>
-    </tr>`).join('');
+      <td class="text-center">${p.keeper ? `<span class="badge stat-badge bg-secondary">🧤 ${p.keeper}</span>` : '–'}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── Sort ──────────────────────────────────────────────────────
@@ -305,6 +342,7 @@ async function loadStandings(seasonId) {
 // ════════════════════════════════════════════════════════════
 let guPlayers    = [];   // all active players
 let guAttendance = {};   // player_id → status string
+let guKeeper     = {};   // player_id → boolean (is goalkeeper for this match)
 let guGoals      = {};   // player_id → number
 let guAssists    = {};   // player_id → number
 let guGeel       = {};   // player_id → number
@@ -314,8 +352,18 @@ let guIsThuis    = true; // home (true) or away (false)
 
 async function guLoadPlayers() {
   const { data } = await supabaseClient
-    .from('players').select('id, naam').eq('active', true).order('naam');
-  guPlayers = data || [];
+    .from('players').select('id, naam, started_season_id, ended_season_id')
+    .eq('active', true).order('naam');
+
+  // Filter to players active in the current season
+  const currentNaam = currentSeason?.naam || '9999';
+  guPlayers = (data || []).filter(p => {
+    const startNaam = allSeasons.find(s => s.id === p.started_season_id)?.naam || null;
+    const endNaam   = allSeasons.find(s => s.id === p.ended_season_id)?.naam   || null;
+    const startOk = !p.started_season_id || (startNaam !== null && startNaam <= currentNaam);
+    const endOk   = !p.ended_season_id   || (endNaam   !== null && currentNaam <= endNaam);
+    return startOk && endOk;
+  });
 }
 
 async function guOpen() {
@@ -372,14 +420,14 @@ async function guLoadMatchData() {
 
   // Load existing stats for this match
   const [aanwRes, doelRes, assRes, kaartRes, motmRes] = await Promise.all([
-    supabaseClient.from('aanwezigheid').select('player_id, status').eq('match_id', matchId),
+    supabaseClient.from('aanwezigheid').select('player_id, status, is_keeper').eq('match_id', matchId),
     supabaseClient.from('doelpunten').select('player_id, aantal').eq('match_id', matchId),
     supabaseClient.from('assists').select('player_id, aantal').eq('match_id', matchId),
     supabaseClient.from('kaarten').select('player_id, geel, rood').eq('match_id', matchId),
     supabaseClient.from('motm').select('player_id').eq('match_id', matchId).maybeSingle(),
   ]);
 
-  (aanwRes.data  || []).forEach(r => { guAttendance[r.player_id] = r.status; });
+  (aanwRes.data  || []).forEach(r => { guAttendance[r.player_id] = r.status; guKeeper[r.player_id] = r.is_keeper || false; });
   (doelRes.data  || []).forEach(r => { guGoals[r.player_id]      = r.aantal; });
   (assRes.data   || []).forEach(r => { guAssists[r.player_id]    = r.aantal; });
   (kaartRes.data || []).forEach(r => { guGeel[r.player_id]       = r.geel; guRood[r.player_id] = r.rood; });
@@ -389,7 +437,7 @@ async function guLoadMatchData() {
 }
 
 function guResetState() {
-  guAttendance = {}; guGoals = {}; guAssists = {}; guGeel = {}; guRood = {}; guMotm = null; guIsThuis = true;
+  guAttendance = {}; guKeeper = {}; guGoals = {}; guAssists = {}; guGeel = {}; guRood = {}; guMotm = null; guIsThuis = true;
 }
 
 function guSetThuis(val) {
@@ -428,6 +476,7 @@ function guRenderTable() {
           <tr>
             <th style="min-width:80px">Speler</th>
             <th class="text-center" style="white-space:nowrap">Aanw.</th>
+            <th class="text-center" title="Keeper">🧤</th>
             <th class="text-center">⚽</th>
             <th class="text-center">🅰</th>
             <th class="text-center">🟡</th>
@@ -439,6 +488,7 @@ function guRenderTable() {
           ${guPlayers.map(p => {
             const s = guAttendance[p.id] || null;
             const canPlay = ['volledig','gewisseld','aanwezig'].includes(s);
+            const isKeeper = guKeeper[p.id] || false;
             const dis = canPlay ? '' : 'disabled';
             const inputStyle = `width:38px;margin:auto${canPlay ? '' : ';background:#eee'}`;
             const aanwBtns = GU_STATUSES.map(({ v, label, icon, color }) => {
@@ -449,12 +499,21 @@ function guRenderTable() {
                        font-size:.7rem;padding:0;line-height:1;"
                 title="${label}" onclick="guToggleAanw('${p.id}','${v}')">${icon}</button>`;
             }).join('');
+            const keeperBtn = canPlay
+              ? `<button type="button"
+                   style="width:26px;height:26px;border-radius:5px;border:1px solid ${isKeeper ? '#0d6efd' : '#ccc'};
+                          background:${isKeeper ? '#0d6efd' : '#fff'};font-size:.7rem;padding:0;line-height:1;"
+                   title="Keeper" onclick="guToggleKeeper('${p.id}')">🧤</button>`
+              : `<button type="button" disabled
+                   style="width:26px;height:26px;border-radius:5px;border:1px solid #eee;
+                          background:#f8f9fa;font-size:.7rem;padding:0;line-height:1;opacity:.35">🧤</button>`;
             return `<tr>
               <td style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
                          font-size:.78rem;vertical-align:middle">${p.naam}</td>
               <td class="text-center" style="vertical-align:middle">
                 <div class="d-flex gap-1 justify-content-center">${aanwBtns}</div>
               </td>
+              <td class="text-center" style="vertical-align:middle">${keeperBtn}</td>
               <td style="vertical-align:middle">
                 <input type="number" class="form-control form-control-sm text-center p-0"
                        style="${inputStyle}" min="0" value="${canPlay ? (guGoals[p.id] || 0) : ''}"
@@ -491,6 +550,13 @@ function guRenderTable() {
 function guToggleAanw(playerId, status) {
   // Toggle off if clicking same button again
   guAttendance[playerId] = guAttendance[playerId] === status ? null : status;
+  // If player is no longer active, clear keeper flag
+  if (!guAttendance[playerId]) guKeeper[playerId] = false;
+  guRenderTable();
+}
+
+function guToggleKeeper(playerId) {
+  guKeeper[playerId] = !guKeeper[playerId];
   guRenderTable();
 }
 
@@ -518,10 +584,15 @@ async function guSaveAll() {
     }
     ops.push(supabaseClient.from('matches').update(matchUpdate).eq('id', matchId));
 
-    // Attendance
+    // Attendance (include is_keeper flag)
     const aanwRecords = guPlayers
       .filter(p => guAttendance[p.id])
-      .map(p => ({ match_id: matchId, player_id: p.id, status: guAttendance[p.id] }));
+      .map(p => ({
+        match_id:  matchId,
+        player_id: p.id,
+        status:    guAttendance[p.id],
+        is_keeper: guKeeper[p.id] || false,
+      }));
     if (aanwRecords.length)
       ops.push(supabaseClient.from('aanwezigheid')
         .upsert(aanwRecords, { onConflict: 'match_id,player_id' }));

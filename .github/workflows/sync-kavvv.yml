@@ -1,8 +1,7 @@
 # ============================================================
 # DODEKA SPORT – KAVVV Auto-Sync Workflow
-# Scrapes uitslagen.vriendenclubsantwerpen.be every Sunday
-# at 22:00 and updates the Supabase database with the latest
-# standings and match results for Tweede Afdeling B.
+# Scrapes uitslagen.vriendenclubsantwerpen.be every Saturday
+# at 18:00 Brussels time (16:00 UTC in summer / CEST).
 #
 # Required GitHub Secrets (Settings → Secrets → Actions):
 #   SUPABASE_URL             – your project URL
@@ -13,7 +12,7 @@ name: Sync KAVVV Data
 
 on:
   schedule:
-    - cron: '0 22 * * 0'   # Every Sunday at 22:00 UTC
+    - cron: '0 16 * * 6'   # Every Saturday at 16:00 UTC = 18:00 Brussels (CEST, summer)
   workflow_dispatch:         # Allow manual trigger from GitHub UI
 
 jobs:

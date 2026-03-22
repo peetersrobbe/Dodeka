@@ -33,6 +33,8 @@
     .sortable            { cursor: pointer; user-select: none; }
     .sortable:hover      { background-color: #8a0828 !important; }
     .sort-icon           { font-size: .7rem; }
+    /* Navbar always visible above auth-gate overlay */
+    nav.navbar           { z-index: 10000; }
   </style>
 </head>
 <body>
@@ -47,14 +49,14 @@
 </div>
 
 <!-- ── Navbar ── -->
-<nav class="navbar navbar-custom navbar-dark navbar-expand-xl py-3 fixed-top text-light">
+<nav class="navbar navbar-custom navbar-dark navbar-expand-lg py-3 fixed-top text-light">
   <div class="container">
     <a href="index.html" class="navbar-brand"><h1>DODEKA.</h1></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navmenu">
-      <ul class="navbar-nav ms-auto align-items-xl-center">
+      <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a href="index.html"         class="nav-link">Home</a></li>
         <li class="nav-item"><a href="historie.html"      class="nav-link">Historie</a></li>
         <li class="nav-item"><a href="spelers.html"       class="nav-link">Spelers</a></li>
@@ -64,9 +66,7 @@
         <li class="nav-item"><a href="HallOfFame.html"    class="nav-link">Hall of Fame</a></li>
         <li class="nav-item"><a href="contact.html"       class="nav-link">Contact</a></li>
         <li class="nav-item"><a href="nieuws.html"        class="nav-link">Nieuws</a></li>
-        <li class="nav-item ms-xl-3" id="nav-auth">
-          <a href="login.html" class="btn btn-outline-light btn-sm">Inloggen</a>
-        </li>
+        <li class="nav-item ms-lg-3" id="nav-auth"></li>
       </ul>
     </div>
   </div>
@@ -116,15 +116,17 @@
               <tr>
                 <th class="sortable" data-col="naam">Naam <span class="sort-icon">↕</span></th>
                 <th class="sortable text-center" data-col="aanwezig" title="Aanwezigheid">✓ <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="wissel_pct" title="% gewisseld van gespeelde wedstrijden">🔄% <span class="sort-icon">↕</span></th>
                 <th class="sortable text-center" data-col="doelpunten" title="Doelpunten">⚽ <span class="sort-icon">↕</span></th>
                 <th class="sortable text-center" data-col="assists"    title="Assists">🅰 <span class="sort-icon">↕</span></th>
                 <th class="sortable text-center" data-col="gele_kaarten" title="Gele kaarten">🟡 <span class="sort-icon">↕</span></th>
                 <th class="sortable text-center" data-col="rode_kaarten" title="Rode kaarten">🔴 <span class="sort-icon">↕</span></th>
                 <th class="sortable text-center" data-col="motm"       title="Man of the Match">⭐ <span class="sort-icon">↕</span></th>
+                <th class="sortable text-center" data-col="keeper"     title="Wedstrijden als keeper">🧤 <span class="sort-icon">↕</span></th>
               </tr>
             </thead>
             <tbody id="stats-tbody">
-              <tr><td colspan="7" class="text-center text-muted py-4">Seizoen laden…</td></tr>
+              <tr><td colspan="9" class="text-center text-muted py-4">Seizoen laden…</td></tr>
             </tbody>
           </table>
         </div>

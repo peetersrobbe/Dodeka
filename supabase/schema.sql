@@ -39,6 +39,7 @@ CREATE TABLE matches (
   score_dodeka        INTEGER,
   score_tegenstander  INTEGER,
   is_thuis            BOOLEAN DEFAULT true,
+  uitslag             TEXT    CHECK (uitslag IN ('w', 'v', 'g', 'fw', 'fv', 'fg')),
   source              TEXT    DEFAULT 'manual'  -- 'manual' or 'kavvv'
 );
 
@@ -47,7 +48,7 @@ CREATE TABLE aanwezigheid (
   id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   match_id   UUID REFERENCES matches(id)  ON DELETE CASCADE,
   player_id  UUID REFERENCES players(id) ON DELETE CASCADE,
-  status     TEXT CHECK (status IN ('volledig', 'gewisseld', 'toeschouwer', 'afwezig', 'verontschuldigd', 'aanwezig')),
+  status     TEXT CHECK (status IN ('volledig', 'gewisseld', 'toeschouwer', 'keeper', 'afwezig', 'verontschuldigd', 'aanwezig')),
   UNIQUE (match_id, player_id)
 );
 

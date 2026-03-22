@@ -122,10 +122,10 @@
         <div class="table-responsive">
           <table class="table table-sm table-hover table-bordered">
             <thead class="table-dark">
-              <tr><th>#</th><th>Naam</th><th>Actief</th><th>Acties</th></tr>
+              <tr><th>#</th><th>Naam</th><th>Actief</th><th>Eerste seizoen</th><th>Laatste seizoen</th><th>Acties</th></tr>
             </thead>
             <tbody id="admin-players-tbody">
-              <tr><td colspan="4" class="text-center text-muted">Laden…</td></tr>
+              <tr><td colspan="6" class="text-center text-muted">Laden…</td></tr>
             </tbody>
           </table>
         </div>
@@ -236,6 +236,20 @@
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" id="player-active" checked>
           <label class="form-check-label" for="player-active">Actieve speler</label>
+        </div>
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label">Eerste seizoen</label>
+            <select id="player-started-season" class="form-select form-select-sm">
+              <option value="">– altijd –</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Laatste seizoen</label>
+            <select id="player-ended-season" class="form-select form-select-sm">
+              <option value="">– huidig –</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
