@@ -51,6 +51,7 @@
         <a class="nav-link"        href="#" onclick="showSection('stats')">📊 Match-stats</a>
         <a class="nav-link"        href="#" onclick="showSection('spelers')">👤 Spelers</a>
         <a class="nav-link"        href="#" onclick="showSection('seizoenen')">📅 Seizoenen</a>
+        <a class="nav-link"        href="#" onclick="showSection('gebruikers')">🔑 Gebruikers</a>
       </nav>
     </div>
 
@@ -61,6 +62,7 @@
         <button class="btn btn-sm btn-outline-secondary" onclick="showSection('stats')">Stats</button>
         <button class="btn btn-sm btn-outline-secondary" onclick="showSection('spelers')">Spelers</button>
         <button class="btn btn-sm btn-outline-secondary" onclick="showSection('seizoenen')">Seizoenen</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="showSection('gebruikers')">🔑 Gebruikers</button>
       </div>
     </div>
 
@@ -144,6 +146,38 @@
             </thead>
             <tbody id="admin-seasons-tbody">
               <tr><td colspan="3" class="text-center text-muted">Laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── GEBRUIKERS ── -->
+      <div id="section-gebruikers" class="admin-section d-none">
+        <div class="section-header">🔑 Gebruikersbeheer</div>
+
+        <!-- Invite instructions -->
+        <div class="alert alert-info d-flex gap-2 align-items-start mb-4" style="font-size:.9rem;">
+          <span style="font-size:1.2rem;">💡</span>
+          <div>
+            <strong>Iemand uitnodigen?</strong> Ga naar
+            <strong>Supabase → Authentication → Users → Invite user</strong>
+            en vul hun e-mailadres in. Ze ontvangen een link om een wachtwoord in te stellen.
+            Gebruik daarna onderstaande tabel om ze admin-rechten te geven of te verwijderen.
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-hover table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th>E-mailadres</th>
+                <th class="text-center">Aangemeld op</th>
+                <th class="text-center">Rol</th>
+                <th class="text-center">Actie</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody">
+              <tr><td colspan="4" class="text-center text-muted">Laden…</td></tr>
             </tbody>
           </table>
         </div>

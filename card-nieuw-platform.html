@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodeka Sport – Nieuw Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 800px;
+    height: 800px;
+    font-family: 'Inter', Arial, sans-serif;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    width: 800px;
+    height: 800px;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top accent bar */
+  .top-bar {
+    height: 8px;
+    background: linear-gradient(90deg, #a00a30 0%, #d01040 100%);
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #a00a30 0%, #7a0824 100%);
+    color: white;
+    padding: 36px 48px 32px;
+    position: relative;
+  }
+
+  .header-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 10px;
+  }
+
+  .header-title {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  .header-subtitle {
+    font-size: 15px;
+    opacity: 0.85;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .header-logo {
+    position: absolute;
+    top: 28px;
+    right: 44px;
+    width: 70px;
+    height: 70px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+  }
+
+  /* Body */
+  .body {
+    flex: 1;
+    padding: 36px 48px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #a00a30;
+    margin-bottom: 18px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .feature {
+    background: #fafafa;
+    border: 1.5px solid #f0f0f0;
+    border-radius: 14px;
+    padding: 20px 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.2s;
+  }
+
+  .feature-icon {
+    font-size: 28px;
+    margin-bottom: 2px;
+  }
+
+  .feature-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.55;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    background: linear-gradient(135deg, #a00a30 0%, #7a0824 100%);
+    border-radius: 14px;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-around;
+    color: white;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 28px;
+    font-weight: 900;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    opacity: 0.75;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 18px 48px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-brand {
+    font-size: 13px;
+    font-weight: 700;
+    color: #a00a30;
+    letter-spacing: 0.5px;
+  }
+
+  .footer-url {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+  }
+
+  .footer-dot {
+    width: 6px;
+    height: 6px;
+    background: #a00a30;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 8px;
+    vertical-align: middle;
+  }
+
+  /* Decorative background circles */
+  .bg-circle-1 {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: rgba(160, 10, 48, 0.04);
+    top: 160px;
+    right: -80px;
+    pointer-events: none;
+  }
+
+  .bg-circle-2 {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(160, 10, 48, 0.04);
+    bottom: 80px;
+    left: -60px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top-bar"></div>
+  <div class="bg-circle-1"></div>
+  <div class="bg-circle-2"></div>
+
+  <div class="header">
+    <div class="header-eyebrow">Dodeka Sport &mdash; Digitaal</div>
+    <div class="header-title">Nieuw statistieken&shy;platform 🚀</div>
+    <div class="header-subtitle">
+      Alle speler- en wedstrijdstatistieken van Dodeka Sport op één centrale plek,<br>
+      live bijgehouden via <strong>dodekasport.be</strong>
+    </div>
+    <div class="header-logo">⚽</div>
+  </div>
+
+  <div class="body">
+    <div>
+      <div class="section-label">Wat kan je op het platform vinden?</div>
+      <div class="features-grid">
+
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Spelersstatistieken</div>
+          <div class="feature-desc">Doelpunten, assists, gele & rode kaarten, Man of the Match en aanwezigheidspercentages per speler.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🗓️</div>
+          <div class="feature-title">Per seizoen</div>
+          <div class="feature-desc">Filter op een specifiek seizoen of bekijk de totalen over alle seizoenen heen in één overzicht.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🔄</div>
+          <div class="feature-title">Wissels &amp; aanwezigheid</div>
+          <div class="feature-desc">Wissel-% berekend op wedstrijden met 11 of meer spelers. Keeper- en toeschouwerspellen worden apart bijgehouden.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">🏆</div>
+          <div class="feature-title">Man of the Match</div>
+          <div class="feature-desc">Wie pakte de meeste MOTM-awards dit seizoen? Vergelijk spelers makkelijk via de gesorteerde tabel.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-item">
+        <div class="stat-number">⚽</div>
+        <div class="stat-label">Doelpunten</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">🅰️</div>
+        <div class="stat-label">Assists</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">🟡🔴</div>
+        <div class="stat-label">Kaarten</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">⭐</div>
+        <div class="stat-label">MOTM</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">📅</div>
+        <div class="stat-label">Aanwezigheid</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <span class="footer-brand">DODEKA SPORT</span>
+      <span class="footer-dot"></span>
+      <span class="footer-url">dodekasport.be/statistieken.html</span>
+    </div>
+    <div style="font-size:12px; color:#bbb;">Seizoen 2024–2025</div>
+  </div>
+</div>
+</body>
+</html>

@@ -2,8 +2,11 @@
 // DODEKA SPORT – Admin Panel Logic
 // ============================================================
 
-let seasons  = [];
-let players  = [];
+let seasons   = [];
+let players   = [];
+let users     = [];   // profiles rows
+let adminIds  = new Set();  // user_ids that are admin
+let currentUserId = null;   // logged-in user's id
 let matchModal, playerModal, seasonModal;
 
 // ── Bootstrap ────────────────────────────────────────────────
@@ -15,6 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { data: isAdmin } = await supabaseClient
     .from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
   if (!isAdmin) { window.location.href = 'statistieken.html'; return; }
+
+  currentUserId = user.id;
 
   matchModal  = new bootstrap.Modal(document.getElementById('matchModal'));
   playerModal = new bootstrap.Modal(document.getElementById('playerModal'));
@@ -37,6 +42,7 @@ function showSection(name) {
   if (name === 'spelers')     renderPlayersAdmin();
   if (name === 'seizoenen')   renderSeasonsAdmin();
   if (name === 'stats')       syncSeasonSelects();
+  if (name === 'gebruikers')  loadUsers();
 }
 
 // ── Seasons ───────────────────────────────────────────────────
@@ -469,6 +475,82 @@ async function saveMOTM(playerId) {
 function parseIntOrNull(id) {
   const v = document.getElementById(id).value;
   return v === '' ? null : parseInt(v);
+}
+
+// ── Users ─────────────────────────────────────────────────────
+async function loadUsers() {
+  const [profilesRes, adminsRes] = await Promise.all([
+    supabaseClient.from('profiles').select('user_id, email, created_at').order('created_at'),
+    supabaseClient.from('admins').select('user_id'),
+  ]);
+
+  users    = profilesRes.data || [];
+  adminIds = new Set((adminsRes.data || []).map(r => r.user_id));
+
+  renderUsersAdmin();
+}
+
+function renderUsersAdmin() {
+  const tbody = document.getElementById('admin-users-tbody');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nog geen gebruikers gevonden. Voer eerst <code>add_user_profiles.sql</code> uit in Supabase.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = users.map(u => {
+    const isAdm  = adminIds.has(u.user_id);
+    const isSelf = u.user_id === currentUserId;
+    const date   = u.created_at
+      ? new Date(u.created_at).toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : '–';
+
+    const rolBadge = isAdm
+      ? '<span class="badge bg-danger">Admin</span>'
+      : '<span class="badge bg-secondary">Kijker</span>';
+
+    const isOwner = u.email === 'robbe.peeters.95@gmail.com';
+
+    let actionBtn;
+    if (isOwner) {
+      // Owner account is permanently protected — no one can demote it
+      actionBtn = '<span class="badge bg-dark">Eigenaar</span>';
+    } else if (isSelf) {
+      // Can't demote yourself
+      actionBtn = '<span class="text-muted small fst-italic">Jij</span>';
+    } else if (isAdm) {
+      actionBtn = `<button class="btn btn-sm btn-outline-secondary"
+                           onclick="toggleAdmin('${u.user_id}', false)">
+                     Maak kijker
+                   </button>`;
+    } else {
+      actionBtn = `<button class="btn btn-sm btn-outline-danger"
+                           onclick="toggleAdmin('${u.user_id}', true)">
+                     Maak admin
+                   </button>`;
+    }
+
+    return `<tr>
+      <td>${u.email}</td>
+      <td class="text-center" style="white-space:nowrap">${date}</td>
+      <td class="text-center">${rolBadge}</td>
+      <td class="text-center">${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function toggleAdmin(userId, makeAdmin) {
+  if (makeAdmin) {
+    const { error } = await supabaseClient.from('admins').insert({ user_id: userId });
+    if (error) { showToast('Fout: ' + error.message); return; }
+    adminIds.add(userId);
+    showToast('Gebruiker is nu admin.');
+  } else {
+    const { error } = await supabaseClient.from('admins').delete().eq('user_id', userId);
+    if (error) { showToast('Fout: ' + error.message); return; }
+    adminIds.delete(userId);
+    showToast('Gebruiker is nu kijker.');
+  }
+  renderUsersAdmin();
 }
 
 async function signOut() {

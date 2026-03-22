@@ -22,6 +22,9 @@
     .stat-badge          { font-size: .8rem; padding: .25em .55em; }
     .table thead th      { background-color: #a00a30; color: #fff; border-color: #8a0828; white-space: nowrap; }
     .table-hover tbody tr:hover { background-color: #fdf0f3; }
+    /* Sticky header for player stats table */
+    .stats-scroll        { max-height: calc(100vh - 240px); overflow-y: auto; overflow-x: auto; }
+    #stats-table thead th { position: sticky; top: 0; z-index: 10; }
     .score-win           { color: #198754; font-weight: 700; }
     .score-draw          { color: #fd7e14; font-weight: 700; }
     .score-loss          { color: #dc3545; font-weight: 700; }
@@ -35,6 +38,9 @@
     .sort-icon           { font-size: .7rem; }
     /* Navbar always visible above auth-gate overlay */
     nav.navbar           { z-index: 10000; }
+    /* Fullscreen modal must sit above the fixed navbar */
+    #gameModal           { z-index: 10001; }
+    #gameModal ~ .modal-backdrop { z-index: 10000; }
   </style>
 </head>
 <body>
@@ -110,7 +116,7 @@
 
         <!-- Player stats table -->
         <h5 class="section-title">Spelersstatistieken</h5>
-        <div class="table-responsive mb-5">
+        <div class="stats-scroll mb-5">
           <table class="table table-hover table-bordered align-middle mb-0" id="stats-table">
             <thead>
               <tr>
@@ -189,20 +195,15 @@
 <!-- ── Floating admin buttons (admins only) ── -->
 <div id="admin-fab" style="display:none; position:fixed; bottom:28px; right:24px; z-index:1040;">
   <div class="d-flex flex-column gap-2 align-items-end">
-    <button class="btn btn-secondary shadow fw-bold px-3 py-2"
-            style="border-radius:50px; font-size:.88rem;"
-            data-bs-toggle="offcanvas" data-bs-target="#playersPanel">
-      👥 Spelers
-    </button>
     <button class="btn btn-warning shadow fw-bold px-4 py-2"
             style="border-radius:50px; font-size:.95rem;"
-            data-bs-toggle="offcanvas" data-bs-target="#gamePanel">
+            data-bs-toggle="modal" data-bs-target="#gameModal">
       ⚡ Na wedstrijd
     </button>
   </div>
 </div>
 
-<!-- ── Players management offcanvas ── -->
+<!-- ── Players management offcanvas (accessible via admin panel) ── -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="playersPanel"
      style="width:min(420px,100vw); display:flex; flex-direction:column;">
   <div class="offcanvas-header" style="background:#495057; color:#fff; flex-shrink:0;">
@@ -217,62 +218,67 @@
   </div>
 </div>
 
-<!-- ── Post-game offcanvas panel ── -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="gamePanel"
-     style="width:min(500px,100vw); display:flex; flex-direction:column;">
-  <div class="offcanvas-header" style="background:#a00a30; color:#fff; flex-shrink:0;">
-    <h5 class="offcanvas-title">⚡ Na de wedstrijd</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-  </div>
+<!-- ── Post-game full-page modal ── -->
+<div class="modal fade" tabindex="-1" id="gameModal">
+  <div class="modal-dialog modal-fullscreen m-0">
+    <div class="modal-content" style="display:flex; flex-direction:column; height:100%;">
 
-  <!-- Scrollable body -->
-  <div class="offcanvas-body p-3" style="overflow-y:auto; flex:1;">
+      <div class="modal-header py-2 px-3" style="background:#a00a30; color:#fff; flex-shrink:0;">
+        <h5 class="modal-title mb-0">⚡ Na de wedstrijd</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
 
-    <!-- Match + score -->
-    <div class="mb-3">
-      <label class="form-label fw-semibold">Wedstrijd</label>
-      <select id="gu-match" class="form-select mb-2" onchange="guLoadMatchData()"></select>
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Score:</label>
-        <div class="text-center">
-          <div id="gu-label-left" class="text-muted" style="font-size:.68rem;line-height:1.2;">Dodeka</div>
-          <input type="number" id="gu-score-left" class="form-control form-control-sm text-center"
-                 style="width:62px" min="0" placeholder="–">
+      <!-- Scrollable body -->
+      <div class="modal-body p-3" style="overflow-y:auto; flex:1;">
+
+        <!-- Match + score -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Wedstrijd</label>
+          <select id="gu-match" class="form-select mb-2" onchange="guLoadMatchData()"></select>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Score:</label>
+            <div class="text-center">
+              <div id="gu-label-left" class="text-muted" style="font-size:.68rem;line-height:1.2;">Dodeka</div>
+              <input type="number" id="gu-score-left" class="form-control form-control-sm text-center"
+                     style="width:62px" min="0" placeholder="–">
+            </div>
+            <span class="fw-bold fs-5">–</span>
+            <div class="text-center">
+              <div id="gu-label-right" class="text-muted" style="font-size:.68rem;line-height:1.2;"></div>
+              <input type="number" id="gu-score-right" class="form-control form-control-sm text-center"
+                     style="width:62px" min="0" placeholder="–">
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Locatie:</label>
+            <div class="btn-group btn-group-sm">
+              <button type="button" id="gu-thuis-btn" class="btn btn-primary"
+                      onclick="guSetThuis(true)">🏠 Thuis</button>
+              <button type="button" id="gu-uit-btn" class="btn btn-outline-secondary"
+                      onclick="guSetThuis(false)">🚌 Uit</button>
+            </div>
+          </div>
         </div>
-        <span class="fw-bold fs-5">–</span>
-        <div class="text-center">
-          <div id="gu-label-right" class="text-muted" style="font-size:.68rem;line-height:1.2;" ></div>
-          <input type="number" id="gu-score-right" class="form-control form-control-sm text-center"
-                 style="width:62px" min="0" placeholder="–">
-        </div>
+
+        <hr class="my-2">
+
+        <!-- Combined attendance + stats table -->
+        <p class="fw-semibold mb-2">Aanwezigheid &amp; statistieken</p>
+        <div id="gu-table" class="mb-3"></div>
+
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Locatie:</label>
-        <div class="btn-group btn-group-sm">
-          <button type="button" id="gu-thuis-btn" class="btn btn-primary"
-                  onclick="guSetThuis(true)">🏠 Thuis</button>
-          <button type="button" id="gu-uit-btn" class="btn btn-outline-secondary"
-                  onclick="guSetThuis(false)">🚌 Uit</button>
-        </div>
+
+      <!-- Sticky save footer -->
+      <div class="p-3 border-top bg-white" style="flex-shrink:0;">
+        <button class="btn w-100 fw-bold" style="background:#a00a30;color:#fff;"
+                onclick="guSaveAll()">
+          <span id="gu-spinner" class="spinner-border spinner-border-sm d-none me-2"></span>
+          💾 Alles opslaan
+        </button>
+        <div id="gu-msg" class="alert mt-2 d-none p-2 small"></div>
       </div>
+
     </div>
-
-    <hr class="my-2">
-
-    <!-- Combined attendance + stats table -->
-    <p class="fw-semibold mb-2">Aanwezigheid &amp; statistieken</p>
-    <div id="gu-table" class="mb-3"></div>
-
-  </div>
-
-  <!-- Sticky save button -->
-  <div class="p-3 border-top bg-white" style="flex-shrink:0;">
-    <button class="btn w-100 fw-bold" style="background:#a00a30;color:#fff;"
-            onclick="guSaveAll()">
-      <span id="gu-spinner" class="spinner-border spinner-border-sm d-none me-2"></span>
-      💾 Alles opslaan
-    </button>
-    <div id="gu-msg" class="alert mt-2 d-none p-2 small"></div>
   </div>
 </div>
 
