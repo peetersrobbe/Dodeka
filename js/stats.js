@@ -8,6 +8,9 @@ let statsData     = [];
 let sortCol       = 'doelpunten';
 let sortAsc       = false;
 let isAdmin       = false;   // set true once admin is confirmed
+let last5Data     = null;    // cached last-5 data, loaded on page boot
+let last5Loading  = false;
+let last5Sort     = 'name';  // 'name' (A→Z) or 'pct_desc' (🔄% hoog→laag)
 
 // ── Boot ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -25,6 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   showSpinner(true);
   await loadSeasons();
+  // Independent of the season selector: always show the last-5-games section
+  loadLast5();
   showSpinner(false);
 
   // Listen for modal open event
@@ -778,6 +783,7 @@ async function guSaveAll() {
 
     // Show success + sync historical stats + refresh display
     guShowMsg('✓ Statistieken opgeslagen!', 'success');
+    invalidateLast5Cache();  // force refetch on next toggle
     if (currentSeason) {
       await refreshHistoricalStatsForSeason(currentSeason.id);
       await Promise.all([loadStats(currentSeason.id), loadMatches(currentSeason.id)]);
@@ -796,6 +802,176 @@ function guShowMsg(text, type) {
   el.textContent = text;
   el.classList.remove('d-none');
 }
+
+// ════════════════════════════════════════════════════════════
+// LAST 5 GAMES VIEW (standalone section, always visible)
+// ════════════════════════════════════════════════════════════
+const LAST5_STATUS_META = {
+  volledig:  { icon: '✅', label: 'Volledig'  },
+  gewisseld: { icon: '🔄', label: 'Gewisseld' },
+  keeper:    { icon: '🧤', label: 'Keeper'    },
+};
+const LAST5_PLAYED_STATUSES = ['volledig', 'gewisseld', 'keeper'];
+
+async function loadLast5() {
+  if (last5Loading) return;
+  last5Loading = true;
+  const listEl = document.getElementById('last5-list');
+  listEl.innerHTML = '<p class="text-muted small mb-0">Laden…</p>';
+  try {
+    // Wait for seasons to be loaded so we know which one is_current
+    if (!allSeasons.length) {
+      const { data } = await supabaseClient.from('seasons').select('*');
+      allSeasons = data || [];
+    }
+    const activeSeason = allSeasons.find(s => s.is_current) || null;
+    const labelEl = document.getElementById('last5-season-label');
+    if (labelEl) labelEl.textContent = activeSeason ? activeSeason.naam : 'huidig seizoen';
+
+    // Fetch active players + all matches (id → datum + tegenstander + season_id).
+    const [playersRes, matchesRes] = await Promise.all([
+      supabaseClient.from('players').select('id, naam').eq('active', true).order('naam'),
+      supabaseClient.from('matches').select('id, datum, tegenstander, season_id'),
+    ]);
+
+    const players = playersRes.data || [];
+    const matchById = {};
+    const activeSeasonMatchIds = new Set();
+    for (const m of (matchesRes.data || [])) {
+      matchById[m.id] = m;
+      if (activeSeason && m.season_id === activeSeason.id) activeSeasonMatchIds.add(m.id);
+    }
+
+    // Paginate aanwezigheid (played statuses only) to dodge Supabase's 1000-row cap
+    const pageSize = 1000;
+    const aanwRows = [];
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabaseClient
+        .from('aanwezigheid')
+        .select('player_id, status, match_id')
+        .in('status', LAST5_PLAYED_STATUSES)
+        .range(from, from + pageSize - 1);
+      if (error) throw error;
+      if (!data || !data.length) break;
+      aanwRows.push(...data);
+      if (data.length < pageSize) break;
+    }
+
+    // Per-match team size for active season (counts volledig+gewisseld+keeper).
+    // Only matches with ≥11 players qualify for the wissel% calc — same as main stats table.
+    const activeSeasonTeamSize = {};
+    for (const r of aanwRows) {
+      if (activeSeasonMatchIds.has(r.match_id)) {
+        activeSeasonTeamSize[r.match_id] = (activeSeasonTeamSize[r.match_id] || 0) + 1;
+      }
+    }
+
+    // Group by player: last-5 games across all seasons + per-player active-season sub% counters
+    const byPlayer = {};
+    const ensure = pid => {
+      if (!byPlayer[pid]) byPlayer[pid] = {
+        games: [],
+        qualGespeeld: 0,   // volledig+gewisseld in active-season matches with ≥11 players
+        qualGewisseld: 0,  // gewisseld in same matches
+      };
+      return byPlayer[pid];
+    };
+    for (const r of aanwRows) {
+      const m = matchById[r.match_id];
+      if (!m || !m.datum) continue;
+      const b = ensure(r.player_id);
+      b.games.push({ datum: m.datum, tegenstander: m.tegenstander, status: r.status });
+
+      if (activeSeasonMatchIds.has(r.match_id) && (activeSeasonTeamSize[r.match_id] || 0) >= 11) {
+        if (r.status === 'volledig' || r.status === 'gewisseld') b.qualGespeeld++;
+        if (r.status === 'gewisseld') b.qualGewisseld++;
+      }
+    }
+
+    last5Data = players.map(p => {
+      const b = byPlayer[p.id] || { games: [], qualGespeeld: 0, qualGewisseld: 0 };
+      const games = b.games
+        .sort((a, b) => (a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0))
+        .slice(0, 5);
+      const wissel_pct = b.qualGespeeld > 0
+        ? Math.round(b.qualGewisseld / b.qualGespeeld * 100)
+        : null;
+      return { player_id: p.id, naam: p.naam, games, wissel_pct };
+    });
+  } catch (err) {
+    listEl.innerHTML = `<p class="text-danger small mb-0">Fout bij laden: ${err.message}</p>`;
+    last5Loading = false;
+    return;
+  }
+  last5Loading = false;
+  renderLast5();
+}
+
+function renderLast5() {
+  const listEl = document.getElementById('last5-list');
+  if (!last5Data || !last5Data.length) {
+    listEl.innerHTML = '<p class="text-muted small mb-0">Geen spelers gevonden.</p>';
+    return;
+  }
+
+  const sorted = [...last5Data].sort((a, b) => {
+    const ag = a.games.length, bg = b.games.length;
+    // Zero-game players always sink to the bottom, both views
+    if (ag === 0 && bg > 0) return 1;
+    if (bg === 0 && ag > 0) return -1;
+
+    if (last5Sort === 'pct_desc') {
+      const ap = a.wissel_pct, bp = b.wissel_pct;
+      // null (no qualifying matches) sinks below numeric values
+      if (ap == null && bp == null) return a.naam.localeCompare(b.naam);
+      if (ap == null) return 1;
+      if (bp == null) return -1;
+      if (bp !== ap) return bp - ap;        // high → low
+      return a.naam.localeCompare(b.naam);  // tiebreaker
+    }
+    // default: alphabetical
+    return a.naam.localeCompare(b.naam);
+  });
+
+  listEl.innerHTML = sorted.map(p => {
+    const pctCell = p.wissel_pct !== null
+      ? `<div class="last5-pct" title="Wisselpercentage huidig seizoen">${p.wissel_pct}%</div>`
+      : `<div class="last5-pct muted" title="Geen gekwalificeerde wedstrijden in huidig seizoen">–</div>`;
+
+    if (!p.games.length) {
+      return `<div class="last5-row">
+        <div class="last5-name">${p.naam}</div>
+        ${pctCell}
+        <div class="last5-empty">Nog geen wedstrijden</div>
+      </div>`;
+    }
+    const tiles = p.games.map(g => {
+      const meta = LAST5_STATUS_META[g.status] || { icon: '•', label: g.status };
+      const dateStr = new Date(g.datum).toLocaleDateString('nl-BE', { day:'2-digit', month:'2-digit', year:'2-digit' });
+      const tegSafe = (g.tegenstander || '?').replace(/"/g, '&quot;');
+      const title   = `${meta.label} · ${dateStr} · ${tegSafe}`;
+      return `<div class="last5-game" title="${title}">
+        <span class="ico" aria-label="${meta.label}">${meta.icon}</span>
+      </div>`;
+    }).join('');
+    return `<div class="last5-row">
+      <div class="last5-name">${p.naam}</div>
+      ${pctCell}
+      <div class="last5-games">${tiles}</div>
+    </div>`;
+  }).join('');
+}
+
+function setLast5Sort(mode) {
+  last5Sort = mode;
+  document.querySelectorAll('[data-last5-sort]').forEach(b => {
+    b.classList.toggle('active', b.dataset.last5Sort === mode);
+  });
+  renderLast5();
+}
+
+// Called after an admin saves match stats so the section picks up the new data
+function invalidateLast5Cache() { last5Data = null; loadLast5(); }
 
 // ── Helpers ───────────────────────────────────────────────────
 function showSpinner(on) {

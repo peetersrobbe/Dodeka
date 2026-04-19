@@ -41,6 +41,26 @@
     /* Fullscreen modal must sit above the fixed navbar */
     #gameModal           { z-index: 10001; }
     #gameModal ~ .modal-backdrop { z-index: 10000; }
+    /* ── Last-5-games view ── */
+    #last5-container     { max-height: calc(100vh - 240px); overflow-y: auto; }
+    .last5-row           { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .75rem;
+                           padding:.55rem .25rem; border-bottom:1px solid #eee; }
+    .last5-row:last-child{ border-bottom:none; }
+    .last5-name          { flex:0 0 170px; font-weight:600; font-size:.92rem;
+                           white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .last5-pct           { flex:0 0 64px; text-align:right; font-variant-numeric:tabular-nums;
+                           font-size:.85rem; font-weight:600; white-space:nowrap; }
+    .last5-pct.muted     { color:#adb5bd; font-weight:400; }
+    .last5-games         { display:flex; gap:.15rem; flex-wrap:wrap; font-size:1.1rem; line-height:1; }
+    .last5-empty         { color:#adb5bd; font-size:.82rem; font-style:italic; }
+    /* On narrow screens: name gets its own full-width line, pct + emojis drop below */
+    @media (max-width: 575.98px) {
+      .last5-row        { gap:.25rem .6rem; padding:.5rem .15rem; }
+      .last5-name       { flex:1 1 100%; font-size:.9rem;
+                          white-space:normal; overflow:visible; text-overflow:clip; }
+      .last5-pct        { flex:0 0 auto; text-align:left; font-size:.82rem; }
+      .last5-games      { font-size:1.05rem; }
+    }
   </style>
 </head>
 <body>
@@ -114,6 +134,52 @@
       <!-- LEFT: stats + matches -->
       <div class="col-lg-8">
 
+        <!-- Last 5 games per player (always visible section) -->
+        <h5 class="section-title">
+          Laatste 5 wedstrijden
+          <small class="text-muted" style="font-weight:400;font-size:.75rem">
+            · 🔄% voor <span id="last5-season-label">huidig seizoen</span> · alle seizoenen voor de iconen
+          </small>
+        </h5>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <div class="small text-muted">
+            <span title="Volledige wedstrijd">✅ volledig</span> ·
+            <span title="Gewisseld">🔄 gewisseld</span> ·
+            <span title="Keeper">🧤 keeper</span>. Meest recente links.
+          </div>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Sorteren">
+            <button type="button" class="btn btn-outline-secondary active" data-last5-sort="name"
+                    onclick="setLast5Sort('name')">Naam A–Z</button>
+            <button type="button" class="btn btn-outline-secondary" data-last5-sort="pct_desc"
+                    onclick="setLast5Sort('pct_desc')">🔄% hoog → laag</button>
+          </div>
+        </div>
+        <div class="mb-5" id="last5-container">
+          <div id="last5-list">
+            <p class="text-muted small mb-0">Laden…</p>
+          </div>
+        </div>
+
+        <!-- Match results -->
+        <h5 class="section-title">Wedstrijden</h5>
+        <div class="table-responsive mb-5">
+          <table class="table table-hover table-bordered align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Tegenstander</th>
+                <th class="text-center">Score</th>
+                <th class="text-center">T/U</th>
+                <th class="text-center">Uitslag</th>
+                <th id="matches-actions-th" class="text-center d-none"></th>
+              </tr>
+            </thead>
+            <tbody id="matches-tbody">
+              <tr><td colspan="5" class="text-center text-muted py-4">Laden…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Player stats table -->
         <h5 class="section-title">Spelersstatistieken</h5>
         <div class="stats-scroll mb-5">
@@ -133,26 +199,6 @@
             </thead>
             <tbody id="stats-tbody">
               <tr><td colspan="9" class="text-center text-muted py-4">Seizoen laden…</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Match results -->
-        <h5 class="section-title">Wedstrijden</h5>
-        <div class="table-responsive">
-          <table class="table table-hover table-bordered align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Datum</th>
-                <th>Tegenstander</th>
-                <th class="text-center">Score</th>
-                <th class="text-center">T/U</th>
-                <th class="text-center">Uitslag</th>
-                <th id="matches-actions-th" class="text-center d-none"></th>
-              </tr>
-            </thead>
-            <tbody id="matches-tbody">
-              <tr><td colspan="5" class="text-center text-muted py-4">Laden…</td></tr>
             </tbody>
           </table>
         </div>
