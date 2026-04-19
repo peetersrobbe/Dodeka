@@ -920,13 +920,13 @@ function renderLast5() {
     if (ag === 0 && bg > 0) return 1;
     if (bg === 0 && ag > 0) return -1;
 
-    if (last5Sort === 'pct_desc') {
+    if (last5Sort === 'pct_desc' || last5Sort === 'pct_asc') {
       const ap = a.wissel_pct, bp = b.wissel_pct;
-      // null (no qualifying matches) sinks below numeric values
+      // null (no qualifying matches) always sinks below numeric values
       if (ap == null && bp == null) return a.naam.localeCompare(b.naam);
       if (ap == null) return 1;
       if (bp == null) return -1;
-      if (bp !== ap) return bp - ap;        // high → low
+      if (ap !== bp) return last5Sort === 'pct_desc' ? bp - ap : ap - bp;
       return a.naam.localeCompare(b.naam);  // tiebreaker
     }
     // default: alphabetical
