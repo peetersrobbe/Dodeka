@@ -341,6 +341,48 @@ function renderStats() {
   }).join('');
 }
 
+// ── Export spelersstatistieken naar Excel ─────────────────────
+function exportStats() {
+  if (!statsData || !statsData.length) return;
+
+  // Zelfde sortering als de tabel
+  const sorted = [...statsData].sort((a, b) => {
+    const va = a[sortCol], vb = b[sortCol];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    if (typeof va === 'number') return sortAsc ? va - vb : vb - va;
+    return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+  });
+
+  // Rijen opbouwen met leesbare kolomnamen
+  const rows = sorted.map(p => ({
+    'Naam':              p.naam,
+    'Aanwezig':          p.aanwezig,
+    'Gespeeld':          p.gespeeld,
+    'Gewisseld %':       p.wissel_pct !== null ? p.wissel_pct : '',
+    'Doelpunten':        p.doelpunten || 0,
+    'Assists':           p.assists    || 0,
+    'Gele kaarten':      p.gele_kaarten || 0,
+    'Rode kaarten':      p.rode_kaarten || 0,
+    'Man of the Match':  p.motm        || 0,
+    'Keeper':            p.keeper      || 0,
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Kolombreedte automatisch aanpassen
+  const colWidths = Object.keys(rows[0]).map(k => ({ wch: Math.max(k.length, 10) }));
+  ws['!cols'] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  const sheetName = currentSeason ? currentSeason.naam : 'Alle seizoenen';
+  XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0, 31));
+
+  const seizoenLabel = currentSeason ? currentSeason.naam.replace(/\//g, '-') : 'alle-seizoenen';
+  XLSX.writeFile(wb, `Dodeka-statistieken-${seizoenLabel}.xlsx`);
+}
+
 // ── Sort ──────────────────────────────────────────────────────
 document.querySelectorAll('th.sortable').forEach(th => {
   th.addEventListener('click', () => {
@@ -960,6 +1002,56 @@ function renderLast5() {
       <div class="last5-games">${tiles}</div>
     </div>`;
   }).join('');
+}
+
+// ── Export laatste 5 wedstrijden naar Excel ───────────────────
+function exportLast5() {
+  if (!last5Data || !last5Data.length) return;
+
+  // Zelfde sortering als de weergave
+  const sorted = [...last5Data].sort((a, b) => {
+    const ag = a.games.length, bg = b.games.length;
+    if (ag === 0 && bg > 0) return 1;
+    if (bg === 0 && ag > 0) return -1;
+    if (last5Sort === 'pct_desc' || last5Sort === 'pct_asc') {
+      const ap = a.wissel_pct, bp = b.wissel_pct;
+      if (ap == null && bp == null) return a.naam.localeCompare(b.naam);
+      if (ap == null) return 1;
+      if (bp == null) return -1;
+      if (ap !== bp) return last5Sort === 'pct_desc' ? bp - ap : ap - bp;
+    }
+    return a.naam.localeCompare(b.naam);
+  });
+
+  const statusLabel = { volledig: 'Volledig', gewisseld: 'Gewisseld', keeper: 'Keeper' };
+
+  const rows = sorted.map(p => {
+    const row = {
+      'Naam':        p.naam,
+      'Wisselpercentage (%)': p.wissel_pct !== null ? p.wissel_pct : '',
+    };
+    // Voeg de laatste 5 wedstrijden toe als aparte kolommen
+    for (let i = 0; i < 5; i++) {
+      const g = p.games[i];
+      const prefix = `Wedstrijd ${i + 1}`;
+      row[`${prefix} – Datum`]       = g ? new Date(g.datum).toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+      row[`${prefix} – Tegenstander`] = g ? (g.tegenstander || '') : '';
+      row[`${prefix} – Status`]       = g ? (statusLabel[g.status] || g.status) : '';
+    }
+    return row;
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Kolombreedte
+  const colWidths = Object.keys(rows[0]).map(k => ({ wch: Math.max(k.length, 12) }));
+  ws['!cols'] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  const activeSeason = allSeasons.find(s => s.is_current);
+  const seizoenLabel = activeSeason ? activeSeason.naam.replace(/\//g, '-') : 'huidig';
+  XLSX.utils.book_append_sheet(wb, ws, 'Laatste 5');
+  XLSX.writeFile(wb, `Dodeka-laatste5-${seizoenLabel}.xlsx`);
 }
 
 function setLast5Sort(mode) {
