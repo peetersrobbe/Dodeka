@@ -315,7 +315,7 @@
                      style="width:62px" min="0" placeholder="–">
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2 mb-2">
             <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Locatie:</label>
             <div class="btn-group btn-group-sm">
               <button type="button" id="gu-thuis-btn" class="btn btn-primary"
@@ -323,6 +323,13 @@
               <button type="button" id="gu-uit-btn" class="btn btn-outline-secondary"
                       onclick="guSetThuis(false)">🚌 Uit</button>
             </div>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="gu-friendly"
+                   onchange="guSetFriendly(this.checked)">
+            <label class="form-check-label" for="gu-friendly">
+              Vriendschappelijke wedstrijd <small class="text-muted">(telt niet mee in de statistieken)</small>
+            </label>
           </div>
         </div>
 

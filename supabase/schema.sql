@@ -40,6 +40,7 @@ CREATE TABLE matches (
   score_tegenstander  INTEGER,
   is_thuis            BOOLEAN DEFAULT true,
   uitslag             TEXT    CHECK (uitslag IN ('w', 'v', 'g', 'fw', 'fv', 'fg')),
+  is_friendly         BOOLEAN NOT NULL DEFAULT false,  -- friendly game: shown but excluded from all stats
   source              TEXT    DEFAULT 'manual'  -- 'manual' or 'kavvv'
 );
 

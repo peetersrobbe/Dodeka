@@ -249,9 +249,11 @@ async function loadMatchesAdmin() {
     const datum = m.datum ? new Date(m.datum).toLocaleDateString('nl-BE') : '?';
     const score = (m.score_dodeka !== null && m.score_tegenstander !== null)
       ? `${m.score_dodeka}–${m.score_tegenstander}` : '–';
+    const friendlyBadge = m.is_friendly
+      ? ' <span class="badge bg-info text-dark">Vriendschappelijk</span>' : '';
     return `<tr>
       <td>${datum}</td>
-      <td>${m.tegenstander}</td>
+      <td>${m.tegenstander}${friendlyBadge}</td>
       <td>${score}</td>
       <td>${m.is_thuis ? 'T' : 'U'}</td>
       <td>
@@ -270,6 +272,7 @@ function openMatchModal() {
   document.getElementById('match-score-dodeka').value = '';
   document.getElementById('match-score-teg').value = '';
   document.getElementById('is-thuis').checked = true;
+  document.getElementById('match-friendly').checked = false;
   document.getElementById('matchModalTitle').textContent = 'Wedstrijd toevoegen';
   matchModal.show();
 }
@@ -284,6 +287,7 @@ async function editMatch(id) {
   document.getElementById('match-score-dodeka').value = m.score_dodeka ?? '';
   document.getElementById('match-score-teg').value = m.score_tegenstander ?? '';
   document.querySelector(`input[name="thuisUit"][value="${m.is_thuis}"]`).checked = true;
+  document.getElementById('match-friendly').checked = !!m.is_friendly;
   document.getElementById('matchModalTitle').textContent = 'Wedstrijd bewerken';
   matchModal.show();
 }
@@ -298,6 +302,7 @@ async function saveMatch() {
     score_dodeka:        parseIntOrNull('match-score-dodeka'),
     score_tegenstander:  parseIntOrNull('match-score-teg'),
     is_thuis:            document.querySelector('input[name="thuisUit"]:checked').value === 'true',
+    is_friendly:         document.getElementById('match-friendly').checked,
   };
   if (!payload.datum || !payload.tegenstander) return;
 

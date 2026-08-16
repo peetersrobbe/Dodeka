@@ -163,13 +163,14 @@ async function selectSeason(season) {
 
 // ── Player Stats (per seizoen) ────────────────────────────────
 async function loadStats(seasonId) {
-  // Step 1: match IDs for this season (for attendance)
+  // Step 1: match IDs for this season (for attendance).
+  // Friendly games are excluded — they never count toward statistics.
   const { data: matches, error: mErr } = await supabaseClient
-    .from('matches').select('id').eq('season_id', seasonId);
+    .from('matches').select('id, is_friendly').eq('season_id', seasonId);
 
   if (mErr) { showError('Kon wedstrijden niet laden: ' + mErr.message); return; }
 
-  const matchIds = (matches || []).map(m => m.id);
+  const matchIds = (matches || []).filter(m => !m.is_friendly).map(m => m.id);
   if (!matchIds.length) {
     statsData = [];
     renderStats();
@@ -445,9 +446,12 @@ async function loadMatches(seasonId) {
                    onclick="guOpenMatch('${m.id}')" title="Statistieken bewerken">✏</button>
          </td>`
       : '';
-    return `<tr>
+    const friendlyBadge = m.is_friendly
+      ? ' <span class="badge bg-info text-dark" title="Vriendschappelijke wedstrijd – telt niet mee in de statistieken">Vriendschappelijk</span>'
+      : '';
+    return `<tr${m.is_friendly ? ' class="table-light text-muted"' : ''}>
       <td style="white-space:nowrap">${datum}</td>
-      <td>${m.tegenstander}</td>
+      <td>${m.tegenstander}${friendlyBadge}</td>
       <td class="text-center">${scoreDisplay}</td>
       <td class="text-center"><small>${m.is_thuis ? '🏠' : '🚌'}</small></td>
       <td class="text-center">${resultBadge}</td>
@@ -510,6 +514,7 @@ let guGeel       = {};   // player_id → number
 let guRood       = {};   // player_id → number
 let guMotm       = new Set(); // Set of player_ids (multiple MOTM allowed)
 let guIsThuis    = true; // home (true) or away (false)
+let guIsFriendly = false; // friendly game (excluded from all statistics)
 
 async function guLoadPlayers() {
   const { data } = await supabaseClient
@@ -533,7 +538,7 @@ async function guOpen() {
 
   // Fill match dropdown with this season's matches (include is_thuis)
   const { data: matches } = await supabaseClient
-    .from('matches').select('id, datum, tegenstander, score_dodeka, score_tegenstander, is_thuis')
+    .from('matches').select('id, datum, tegenstander, score_dodeka, score_tegenstander, is_thuis, is_friendly')
     .eq('season_id', currentSeason.id).order('datum', { ascending: false });
 
   const sel = document.getElementById('gu-match');
@@ -544,11 +549,13 @@ async function guOpen() {
   }
   sel.innerHTML = matches.map(m => {
     const d = m.datum ? new Date(m.datum).toLocaleDateString('nl-BE') : '?';
+    const friendlyTag = m.is_friendly ? ' (vriendschappelijk)' : '';
     return `<option value="${m.id}"
                     data-teg="${m.tegenstander}"
                     data-sd="${m.score_dodeka ?? ''}"
                     data-st="${m.score_tegenstander ?? ''}"
-                    data-thuis="${m.is_thuis ? '1' : '0'}">${d} – ${m.tegenstander}</option>`;
+                    data-thuis="${m.is_thuis ? '1' : '0'}"
+                    data-friendly="${m.is_friendly ? '1' : '0'}">${d} – ${m.tegenstander}${friendlyTag}</option>`;
   }).join('');
 
   // If opened via edit button, jump to that match; otherwise default to first
@@ -569,6 +576,7 @@ async function guLoadMatchData() {
 
   // Pre-fill home/away first (guSetThuis updates labels)
   guSetThuis(opt.dataset.thuis !== '0');
+  guSetFriendly(opt.dataset.friendly === '1');
 
   // Pre-fill score in conventional order: home team first
   // Home: left=Dodeka (sd), right=Teg (st)
@@ -598,7 +606,13 @@ async function guLoadMatchData() {
 }
 
 function guResetState() {
-  guAttendance = {}; guGoals = {}; guAssists = {}; guGeel = {}; guRood = {}; guMotm = new Set(); guIsThuis = true;
+  guAttendance = {}; guGoals = {}; guAssists = {}; guGeel = {}; guRood = {}; guMotm = new Set(); guIsThuis = true; guIsFriendly = false;
+}
+
+function guSetFriendly(val) {
+  guIsFriendly = !!val;
+  const cb = document.getElementById('gu-friendly');
+  if (cb) cb.checked = guIsFriendly;
 }
 
 function guSetThuis(val) {
@@ -711,9 +725,14 @@ function guToggleMotm(playerId, checked) {
 // ── Sync historical_season_stats after editing match stats ────
 async function refreshHistoricalStatsForSeason(seasonId) {
   const { data: seasonMatches } = await supabaseClient
-    .from('matches').select('id').eq('season_id', seasonId);
-  const mIds = (seasonMatches || []).map(m => m.id);
-  if (!mIds.length) return;
+    .from('matches').select('id, is_friendly').eq('season_id', seasonId);
+  // Friendly games are excluded from the aggregated season totals.
+  const mIds = (seasonMatches || []).filter(m => !m.is_friendly).map(m => m.id);
+  if (!mIds.length) {
+    // No counting matches left — clear any stale rollup for this season.
+    await supabaseClient.from('historical_season_stats').delete().eq('season_id', seasonId);
+    return;
+  }
 
   const [doelRes, assRes, kaartRes, motmRes, aanwRes] = await Promise.all([
     supabaseClient.from('doelpunten').select('player_id, aantal').in('match_id', mIds),
@@ -771,12 +790,16 @@ async function guSaveAll() {
     const rightVal = parseInt(document.getElementById('gu-score-right').value);
     const sd = guIsThuis ? leftVal  : rightVal;  // Dodeka score
     const st = guIsThuis ? rightVal : leftVal;   // Tegenstander score
-    const matchUpdate = { is_thuis: guIsThuis };
+    const matchUpdate = { is_thuis: guIsThuis, is_friendly: guIsFriendly };
     if (!isNaN(sd) && !isNaN(st)) {
       matchUpdate.score_dodeka = sd;
       matchUpdate.score_tegenstander = st;
     }
     await supabaseClient.from('matches').update(matchUpdate).eq('id', matchId);
+
+    // Keep the dropdown option in sync so toggling again without reopening works.
+    const selOpt = document.getElementById('gu-match').selectedOptions[0];
+    if (selOpt) selOpt.dataset.friendly = guIsFriendly ? '1' : '0';
 
     // Phase 2: wipe all existing per-match stats so cleared values don't linger
     await Promise.all([
@@ -873,13 +896,14 @@ async function loadLast5() {
     // Fetch active players + all matches (id → datum + tegenstander + season_id).
     const [playersRes, matchesRes] = await Promise.all([
       supabaseClient.from('players').select('id, naam').eq('active', true).order('naam'),
-      supabaseClient.from('matches').select('id, datum, tegenstander, season_id'),
+      supabaseClient.from('matches').select('id, datum, tegenstander, season_id, is_friendly'),
     ]);
 
     const players = playersRes.data || [];
     const matchById = {};
     const activeSeasonMatchIds = new Set();
     for (const m of (matchesRes.data || [])) {
+      if (m.is_friendly) continue;   // friendlies never count toward the last-5 view or wissel%
       matchById[m.id] = m;
       if (activeSeason && m.season_id === activeSeason.id) activeSeasonMatchIds.add(m.id);
     }
