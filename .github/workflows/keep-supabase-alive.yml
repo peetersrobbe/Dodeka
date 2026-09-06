@@ -1,0 +1,44 @@
+# ============================================================
+# DODEKA SPORT – Keep Supabase Awake
+# Free-tier Supabase projects pause after 7 days of no activity.
+# This workflow pings the database daily so it never goes idle.
+#
+# It uses the PUBLIC anon key (already committed in
+# js/supabase-config.js), so no GitHub Secrets are required.
+# The request runs a tiny SELECT on the public `players` table,
+# which reaches PostgREST + Postgres and counts as activity.
+# ============================================================
+
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # Every day at 05:17 UTC
+  workflow_dispatch:         # Allow manual trigger from the GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase database
+        run: |
+          SUPABASE_URL='https://ntxbgiccwdmsmsuhaicc.supabase.co'
+          SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50eGJnaWNjd2Rtc21zdWhhaWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTM3ODMsImV4cCI6MjA4OTY4OTc4M30.iGiaocIQMCKSWW49zvOdkeg9ZAiiJDkPRkiVeXVSAV0'
+
+          echo "Pinging $SUPABASE_URL ..."
+          HTTP_CODE=$(curl -s -o /tmp/resp.txt -w '%{http_code}' \
+            "$SUPABASE_URL/rest/v1/players?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON" \
+            -H "Authorization: Bearer $SUPABASE_ANON")
+
+          echo "HTTP status: $HTTP_CODE"
+          echo "Response body:"
+          cat /tmp/resp.txt
+
+          # Any 2xx means Postgres answered and the project is awake.
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Database is awake."
+          else
+            echo "❌ Unexpected status $HTTP_CODE"
+            exit 1
+          fi
