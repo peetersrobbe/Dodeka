@@ -463,8 +463,8 @@ async function loadMatches(seasonId) {
 // Open the modal pre-selected on a specific match (from the edit button)
 async function guOpenMatch(matchId) {
   if (!isAdmin) return;
-  // Make sure players are loaded
-  if (!guPlayers.length) await guLoadPlayers();
+  // Always refresh so newly added players show up
+  await guLoadPlayers();
 
   // Flag so guOpen() knows which match to pre-select
   guPendingMatchId = matchId;
@@ -535,6 +535,7 @@ async function guLoadPlayers() {
 async function guOpen() {
   if (!isAdmin || !currentSeason) return;
   guResetState();
+  await guLoadPlayers();  // always refresh so newly added players show up
 
   // Fill match dropdown with this season's matches (include is_thuis)
   const { data: matches } = await supabaseClient
