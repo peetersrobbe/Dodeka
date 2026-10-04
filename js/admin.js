@@ -202,9 +202,15 @@ function editPlayer(id) {
   playerModal.show();
 }
 
+// Zet een naam om naar 'Achternaam Voornaam' (elk woord met hoofdletter)
+function formatNaam(naam) {
+  return naam.trim().replace(/\s+/g, ' ').toLowerCase()
+    .replace(/(^|[\s\-'])(\p{L})/gu, (m, sep, ch) => sep + ch.toUpperCase());
+}
+
 async function savePlayer() {
   const id               = document.getElementById('player-id').value;
-  const naam             = document.getElementById('player-naam').value.trim();
+  const naam             = formatNaam(document.getElementById('player-naam').value);
   const nummer           = parseInt(document.getElementById('player-nummer').value) || null;
   const active           = document.getElementById('player-active').checked;
   const started_season_id = document.getElementById('player-started-season').value || null;
@@ -330,9 +336,64 @@ function syncSeasonSelects() {
   }
 }
 
+// ── Vaste overzichtsbalk boven de invultabel (Beheer) ────────
+// Leest de huidige waarden uit de tabel, zodat de tellers meteen meelopen.
+let statsMatches = [];
+
+function updateAdminStatsTotals() {
+  const table = document.getElementById('stats-entry-table');
+  const tf    = document.getElementById('stats-summary');
+  if (!table || !tf) return;
+
+  const rows = [...table.querySelectorAll('tbody tr[data-player]')];
+  const val  = (row, i) => parseInt(row.querySelectorAll('input[type=number]')[i]?.value) || 0;
+  const sum  = i => rows.reduce((t, r) => t + val(r, i), 0);
+
+  let aanwezig = 0, afwezig = 0, verontschuldigd = 0;
+  rows.forEach(r => {
+    const s = r.dataset.aanw || '';
+    if (s === 'afwezig') afwezig++;
+    else if (s === 'verontschuldigd') verontschuldigd++;
+    else if (s) aanwezig++;              // aanwezig (of volledig/gewisseld/keeper/toeschouwer)
+  });
+  const motm = table.querySelectorAll('input[name=motm]:checked').length;
+
+  // Controle doelpunten vs. score van Dodeka
+  const goals = sum(0);
+  const match = statsMatches.find(m => m.id === document.getElementById('stats-match-sel').value);
+  const score = match?.score_dodeka;
+  let goalCell = `${goals}`;
+  if (score !== null && score !== undefined) {
+    const ok  = goals === score;
+    const tip = ok ? 'Doelpunten komen overeen met de score'
+                   : `Opgelet: ${goals} doelpunt(en) aangeduid, maar Dodeka scoorde ${score} (eigen doelpunt tegenstander?)`;
+    goalCell = `<span title="${tip}" style="color:${ok ? '#198754' : '#fd7e14'}">${goals}<span class="fw-normal">/${score}</span>${ok ? '' : ' ⚠️'}</span>`;
+  }
+
+  const sep = '<span class="text-muted mx-1">·</span>';
+  tf.innerHTML = `
+    <div class="d-flex flex-wrap align-items-center" style="font-size:.9rem">
+      <strong class="me-2">${aanwezig} aanwezig</strong>
+      <span title="Aanwezig">✓ ${aanwezig}</span>${sep}
+      <span title="Afwezig">✗ ${afwezig}</span>${sep}
+      <span title="Verontschuldigd">~ ${verontschuldigd}</span>
+    </div>
+    <div class="d-flex flex-wrap align-items-center mt-1 fw-semibold">
+      <span title="Doelpunten">⚽ ${goalCell}</span>${sep}
+      <span title="Assists">🅰 ${sum(1)}</span>${sep}
+      <span title="Gele kaarten">🟡 ${sum(2)}</span>${sep}
+      <span title="Rode kaarten">🔴 ${sum(3)}</span>${sep}
+      <span title="Man of the Match">⭐ ${motm}</span>
+    </div>`;
+  // Onder de vaste navigatiebalk blijven plakken
+  const nav = document.querySelector('nav.fixed-top');
+  tf.style.top = (nav ? nav.offsetHeight : 0) + 'px';
+}
+
 async function loadMatchesForStats() {
   const seasonId = document.getElementById('stats-season-sel').value;
   const { data } = await supabaseClient.from('matches').select('*').eq('season_id', seasonId).order('datum');
+  statsMatches = data || [];
   const sel = document.getElementById('stats-match-sel');
   sel.innerHTML = (data || []).map(m => {
     const d = m.datum ? new Date(m.datum).toLocaleDateString('nl-BE') : '?';
@@ -363,6 +424,9 @@ async function loadMatchStats() {
   const activePlayers = players.filter(p => p.active);
 
   document.getElementById('match-stats-form').innerHTML = `
+    <div id="stats-summary"
+         style="position:sticky;top:0;z-index:20;background:#fff;padding:.5rem .75rem;margin-bottom:.5rem;
+                border-bottom:2px solid #a00a30;box-shadow:0 2px 4px rgba(0,0,0,.08)"></div>
     <div class="table-responsive">
       <table class="table table-sm table-bordered" id="stats-entry-table">
         <thead class="table-dark">
@@ -382,7 +446,7 @@ async function loadMatchStats() {
             const geel = kaartMap[p.id]?.geel || 0;
             const rood = kaartMap[p.id]?.rood || 0;
             const isMOTM = p.id === motmId;
-            return `<tr data-player="${p.id}">
+            return `<tr data-player="${p.id}" data-aanw="${aanw || ''}">
               <td>${p.naam}</td>
               <td>
                 <div class="d-flex gap-1">
@@ -397,27 +461,27 @@ async function loadMatchStats() {
               <td class="text-center">
                 <input type="number" class="form-control form-control-sm text-center"
                        style="width:55px;margin:auto" min="0" value="${doelMap[p.id] || 0}"
-                       onchange="saveStatField('doelpunten', '${p.id}', 'aantal', this.value)">
+                       oninput="updateAdminStatsTotals()" onchange="saveStatField('doelpunten', '${p.id}', 'aantal', this.value)">
               </td>
               <td class="text-center">
                 <input type="number" class="form-control form-control-sm text-center"
                        style="width:55px;margin:auto" min="0" value="${assMap[p.id] || 0}"
-                       onchange="saveStatField('assists', '${p.id}', 'aantal', this.value)">
+                       oninput="updateAdminStatsTotals()" onchange="saveStatField('assists', '${p.id}', 'aantal', this.value)">
               </td>
               <td class="text-center">
                 <input type="number" class="form-control form-control-sm text-center"
                        style="width:55px;margin:auto" min="0" value="${geel}"
-                       onchange="saveKaart('${p.id}', 'geel', this.value)">
+                       oninput="updateAdminStatsTotals()" onchange="saveKaart('${p.id}', 'geel', this.value)">
               </td>
               <td class="text-center">
                 <input type="number" class="form-control form-control-sm text-center"
                        style="width:55px;margin:auto" min="0" value="${rood}"
-                       onchange="saveKaart('${p.id}', 'rood', this.value)">
+                       oninput="updateAdminStatsTotals()" onchange="saveKaart('${p.id}', 'rood', this.value)">
               </td>
               <td class="text-center">
                 <input type="radio" name="motm" value="${p.id}" class="form-check-input"
                        ${isMOTM ? 'checked' : ''}
-                       onchange="saveMOTM('${p.id}')">
+                       onchange="saveMOTM('${p.id}');updateAdminStatsTotals()">
               </td>
             </tr>`;
           }).join('')}
@@ -425,6 +489,7 @@ async function loadMatchStats() {
       </table>
     </div>
     <small class="text-muted">Wijzigingen worden automatisch opgeslagen per veld.</small>`;
+  updateAdminStatsTotals();
 }
 
 // ── Stat field savers ─────────────────────────────────────────
@@ -437,6 +502,8 @@ async function setAanw(playerId, status, btn) {
   });
   btn.classList.remove('btn-outline-secondary');
   btn.classList.add(status);
+  row.dataset.aanw = status;
+  updateAdminStatsTotals();
 
   await supabaseClient.from('aanwezigheid').upsert(
     { match_id: matchId, player_id: playerId, status },

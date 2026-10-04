@@ -25,7 +25,7 @@ SELECT '19792ac8-88f6-4a8b-9868-3b0b7184ae85', '521a8c8a-2c7e-437d-b221-3586a981
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=12, gespeeld=12, gewisseld=4, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DE BAKKER Toon'), '521a8c8a-2c7e-437d-b221-3586a9816c4e', 9, 9, 2, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'De Bakker Toon'), '521a8c8a-2c7e-437d-b221-3586a9816c4e', 9, 9, 2, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=9, gespeeld=9, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -53,7 +53,7 @@ SELECT 'b368cd89-d75e-4d9e-9033-e1257f856bd2', '521a8c8a-2c7e-437d-b221-3586a981
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=12, gespeeld=12, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'RENDERS Willem'), '521a8c8a-2c7e-437d-b221-3586a9816c4e', 1, 1, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Renders Willem'), '521a8c8a-2c7e-437d-b221-3586a9816c4e', 1, 1, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=1, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -77,7 +77,7 @@ SELECT 'c0a0bc2b-0f04-4f18-824a-7eb2680f5fdc', '521a8c8a-2c7e-437d-b221-3586a981
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=13, gespeeld=13, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '521a8c8a-2c7e-437d-b221-3586a9816c4e', 11, 10, 6, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '521a8c8a-2c7e-437d-b221-3586a9816c4e', 11, 10, 6, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=11, gespeeld=10, gewisseld=6, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -103,7 +103,7 @@ SELECT '34d80d7f-1327-4839-8dec-889398b9737b', 'd7353430-0e3b-4d52-8929-589bb68d
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=2, gespeeld=2, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DE BAKKER Toon'), 'd7353430-0e3b-4d52-8929-589bb68d6678', 16, 15, 5, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'De Bakker Toon'), 'd7353430-0e3b-4d52-8929-589bb68d6678', 16, 15, 5, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=16, gespeeld=15, gewisseld=5, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -175,11 +175,11 @@ SELECT '23c489b4-ab3d-41f2-b2ef-61ca76e9edb1', 'd7353430-0e3b-4d52-8929-589bb68d
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=18, gespeeld=18, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN GOETHEM Tijl'), 'd7353430-0e3b-4d52-8929-589bb68d6678', 2, 2, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Goethem Tijl'), 'd7353430-0e3b-4d52-8929-589bb68d6678', 2, 2, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=2, gespeeld=2, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), 'd7353430-0e3b-4d52-8929-589bb68d6678', 3, 3, 3, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), 'd7353430-0e3b-4d52-8929-589bb68d6678', 3, 3, 3, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=3, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -209,7 +209,7 @@ SELECT '34d80d7f-1327-4839-8dec-889398b9737b', '84be4ead-cb97-450b-a79f-c3f37f4c
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=12, gespeeld=12, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DE BAKKER Toon'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 14, 13, 3, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'De Bakker Toon'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 14, 13, 3, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=14, gespeeld=13, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -257,7 +257,7 @@ SELECT 'c0a0bc2b-0f04-4f18-824a-7eb2680f5fdc', '84be4ead-cb97-450b-a79f-c3f37f4c
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=12, gespeeld=11, gewisseld=4, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN DER AUWERA Stijn'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 7, 6, 2, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Der Auwera Stijn'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 7, 6, 2, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=7, gespeeld=6, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -265,11 +265,11 @@ SELECT '23c489b4-ab3d-41f2-b2ef-61ca76e9edb1', '84be4ead-cb97-450b-a79f-c3f37f4c
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=17, gespeeld=17, gewisseld=4, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN GOETHEM Tijl'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 1, 1, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Goethem Tijl'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 1, 1, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=1, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 5, 5, 5, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '84be4ead-cb97-450b-a79f-c3f37f4c404d', 5, 5, 5, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=5, gespeeld=5, gewisseld=5, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -295,7 +295,7 @@ SELECT '34d80d7f-1327-4839-8dec-889398b9737b', '03814ec7-8f01-4709-a8f9-e473a76d
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=4, gespeeld=4, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DE BAKKER Toon'), '03814ec7-8f01-4709-a8f9-e473a76d1e86', 3, 3, 1, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'De Bakker Toon'), '03814ec7-8f01-4709-a8f9-e473a76d1e86', 3, 3, 1, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=3, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -347,7 +347,7 @@ SELECT 'c0a0bc2b-0f04-4f18-824a-7eb2680f5fdc', '03814ec7-8f01-4709-a8f9-e473a76d
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=3, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN DER AUWERA Stijn'), '03814ec7-8f01-4709-a8f9-e473a76d1e86', 1, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Der Auwera Stijn'), '03814ec7-8f01-4709-a8f9-e473a76d1e86', 1, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -363,7 +363,7 @@ SELECT '55db8337-8403-4495-a3aa-ce85cf614885', '03814ec7-8f01-4709-a8f9-e473a76d
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=2, gespeeld=2, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '03814ec7-8f01-4709-a8f9-e473a76d1e86', 2, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '03814ec7-8f01-4709-a8f9-e473a76d1e86', 2, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=2, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -393,7 +393,7 @@ SELECT '34d80d7f-1327-4839-8dec-889398b9737b', '9da86047-721f-4fd5-803f-b0ce0c1f
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=13, gespeeld=12, gewisseld=4, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DE BAKKER Toon'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 4, 4, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'De Bakker Toon'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 4, 4, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=4, gespeeld=4, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -413,7 +413,7 @@ SELECT 'feb5a1e3-c509-4833-aacf-4d70aae2f260', '9da86047-721f-4fd5-803f-b0ce0c1f
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=13, gespeeld=13, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DEBAENST Gilles'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 3, 3, 1, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Debaenst Gilles'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 3, 3, 1, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=3, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -421,7 +421,7 @@ SELECT '46e7f9db-b122-4111-a3e8-969af745d315', '9da86047-721f-4fd5-803f-b0ce0c1f
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=5, gespeeld=5, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'GEUDENS Joren'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 1, 1, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Geudens Joren'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 1, 1, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=1, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -457,7 +457,7 @@ SELECT 'c0a0bc2b-0f04-4f18-824a-7eb2680f5fdc', '9da86047-721f-4fd5-803f-b0ce0c1f
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=6, gespeeld=4, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN DER AUWERA Stijn'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 1, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Der Auwera Stijn'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 1, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -465,7 +465,7 @@ SELECT '23c489b4-ab3d-41f2-b2ef-61ca76e9edb1', '9da86047-721f-4fd5-803f-b0ce0c1f
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=15, gespeeld=10, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN DUN Lennert'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 1, 1, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Dun Lennert'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 1, 1, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=1, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -477,7 +477,7 @@ SELECT '55db8337-8403-4495-a3aa-ce85cf614885', '9da86047-721f-4fd5-803f-b0ce0c1f
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=3, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 9, 2, 2, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '9da86047-721f-4fd5-803f-b0ce0c1f4049', 9, 2, 2, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=9, gespeeld=2, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -503,7 +503,7 @@ SELECT '34d80d7f-1327-4839-8dec-889398b9737b', '7f16160c-5442-4536-86b4-52276f03
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=12, gespeeld=12, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DE BAKKER Toon'), '7f16160c-5442-4536-86b4-52276f033840', 2, 2, 0, 1, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'De Bakker Toon'), '7f16160c-5442-4536-86b4-52276f033840', 2, 2, 0, 1, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=2, gespeeld=2, gewisseld=0, keeper_games=1;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -527,7 +527,7 @@ SELECT 'd0a7948c-a298-451d-8903-d70938e4d4c3', '7f16160c-5442-4536-86b4-52276f03
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=8, gespeeld=8, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'DEBAENST Gilles'), '7f16160c-5442-4536-86b4-52276f033840', 1, 1, 1, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Debaenst Gilles'), '7f16160c-5442-4536-86b4-52276f033840', 1, 1, 1, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=1, gewisseld=1, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -587,7 +587,7 @@ SELECT '55db8337-8403-4495-a3aa-ce85cf614885', '7f16160c-5442-4536-86b4-52276f03
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=10, gespeeld=10, gewisseld=3, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '7f16160c-5442-4536-86b4-52276f033840', 3, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '7f16160c-5442-4536-86b4-52276f033840', 3, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -693,7 +693,7 @@ SELECT '55db8337-8403-4495-a3aa-ce85cf614885', '5c5bd0e8-09b8-41bb-9448-fd7e21ef
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=10, gespeeld=10, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '5c5bd0e8-09b8-41bb-9448-fd7e21efc162', 3, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '5c5bd0e8-09b8-41bb-9448-fd7e21efc162', 3, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=3, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -783,7 +783,7 @@ SELECT '6b321166-046b-44e4-8ebf-7e0a20b0fddd', '344ee973-7186-4486-b314-82cdf145
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=4, gespeeld=1, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'THOEN Nathan'), '344ee973-7186-4486-b314-82cdf1456c59', 1, 1, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Thoen Nathan'), '344ee973-7186-4486-b314-82cdf1456c59', 1, 1, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=1, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -803,7 +803,7 @@ SELECT 'c0a0bc2b-0f04-4f18-824a-7eb2680f5fdc', '344ee973-7186-4486-b314-82cdf145
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=17, gespeeld=12, gewisseld=5, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VAN DER AUWERA Stijn'), '344ee973-7186-4486-b314-82cdf1456c59', 4, 4, 2, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Van Der Auwera Stijn'), '344ee973-7186-4486-b314-82cdf1456c59', 4, 4, 2, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=4, gespeeld=4, gewisseld=2, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -819,7 +819,7 @@ SELECT 'e5270f79-ad7d-44ee-a1ce-d96ba66f490b', '344ee973-7186-4486-b314-82cdf145
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=16, gespeeld=16, gewisseld=5, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '344ee973-7186-4486-b314-82cdf1456c59', 1, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '344ee973-7186-4486-b314-82cdf1456c59', 1, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=1, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
@@ -937,7 +937,7 @@ SELECT 'e5270f79-ad7d-44ee-a1ce-d96ba66f490b', '4c55ecd2-206a-4593-973e-7da18400
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=15, gespeeld=15, gewisseld=6, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)
-SELECT (SELECT id FROM players WHERE naam = 'VANLERBERGHE Jens'), '4c55ecd2-206a-4593-973e-7da184008077', 5, 0, 0, 0, 0, 0, 0, 0
+SELECT (SELECT id FROM players WHERE naam = 'Vanlerberghe Jens'), '4c55ecd2-206a-4593-973e-7da184008077', 5, 0, 0, 0, 0, 0, 0, 0
 ON CONFLICT (player_id, season_id) DO UPDATE SET
   aanwezig=5, gespeeld=0, gewisseld=0, keeper_games=0;
 INSERT INTO historical_season_stats (player_id, season_id, aanwezig, gespeeld, gewisseld, keeper_games, doelpunten, assists, gele_kaarten, motm)

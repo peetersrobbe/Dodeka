@@ -76,8 +76,13 @@ sb: Client   = create_client(SUPABASE_URL, SUPABASE_KEY)
 # ── Player cache ──────────────────────────────────────────────
 _player_cache: dict[str, str] = {}
 
+def format_naam(naam: str) -> str:
+    """'VAN DEN BOSCH Robbe' -> 'Van Den Bosch Robbe'"""
+    return ' '.join(naam.split()).lower().title()
+
+
 def get_or_create_player(naam: str) -> str:
-    naam = naam.strip()
+    naam = format_naam(naam)
     if naam in _player_cache:
         return _player_cache[naam]
     res = sb.table('players').select('id').eq('naam', naam).maybe_single().execute()

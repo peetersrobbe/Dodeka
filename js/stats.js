@@ -628,6 +628,7 @@ function guSetThuis(val) {
   const teg = sel.options[sel.selectedIndex]?.dataset?.teg || 'Teg.';
   document.getElementById('gu-label-left').textContent  = val ? 'Dodeka' : teg;
   document.getElementById('gu-label-right').textContent = val ? teg       : 'Dodeka';
+  guUpdateTotals();
 }
 
 /// Attendance options: label, icon, color
@@ -647,6 +648,9 @@ function guRenderTable() {
   }
 
   div.innerHTML = `
+    <div id="gu-summary"
+         style="position:sticky;top:-1rem;z-index:20;background:#fff;margin:0 -1rem .5rem;padding:.5rem 1rem;
+                border-bottom:2px solid #a00a30;box-shadow:0 2px 4px rgba(0,0,0,.08)"></div>
     <div class="table-responsive">
       <table class="table table-sm table-bordered mb-2" style="font-size:.82rem">
         <thead style="background:#a00a30;color:#fff">
@@ -682,22 +686,22 @@ function guRenderTable() {
               <td style="vertical-align:middle">
                 <input type="number" class="form-control form-control-sm text-center p-0"
                        style="${inputStyle}" min="0" value="${canPlay ? (guGoals[p.id] || 0) : ''}"
-                       ${dis} oninput="guGoals['${p.id}']=+this.value">
+                       ${dis} oninput="guGoals['${p.id}']=+this.value;guUpdateTotals()">
               </td>
               <td style="vertical-align:middle">
                 <input type="number" class="form-control form-control-sm text-center p-0"
                        style="${inputStyle}" min="0" value="${canPlay ? (guAssists[p.id] || 0) : ''}"
-                       ${dis} oninput="guAssists['${p.id}']=+this.value">
+                       ${dis} oninput="guAssists['${p.id}']=+this.value;guUpdateTotals()">
               </td>
               <td style="vertical-align:middle">
                 <input type="number" class="form-control form-control-sm text-center p-0"
                        style="${inputStyle}" min="0" value="${canPlay ? (guGeel[p.id] || 0) : ''}"
-                       ${dis} oninput="guGeel['${p.id}']=+this.value">
+                       ${dis} oninput="guGeel['${p.id}']=+this.value;guUpdateTotals()">
               </td>
               <td style="vertical-align:middle">
                 <input type="number" class="form-control form-control-sm text-center p-0"
                        style="${inputStyle}" min="0" value="${canPlay ? (guRood[p.id] || 0) : ''}"
-                       ${dis} oninput="guRood['${p.id}']=+this.value">
+                       ${dis} oninput="guRood['${p.id}']=+this.value;guUpdateTotals()">
               </td>
               <td class="text-center" style="vertical-align:middle">
                 <input type="checkbox" value="${p.id}"
@@ -710,6 +714,60 @@ function guRenderTable() {
         </tbody>
       </table>
     </div>`;
+  guUpdateTotals();
+}
+
+// ── Vaste overzichtsbalk boven de invultabel ─────────────────
+// Telt live wat er al is aangeduid (zelfde regels als bij opslaan).
+function guUpdateTotals() {
+  const tf = document.getElementById('gu-summary');
+  if (!tf) return;
+  const ids = guPlayers.map(p => p.id);
+  const sum = obj => ids.reduce((t, id) => t + (+obj[id] || 0), 0);
+
+  const counts = {};
+  GU_STATUSES.forEach(s => { counts[s.v] = 0; });
+  let aanwezig = 0;
+  ids.forEach(id => {
+    const s = guAttendance[id];
+    if (!s) return;
+    if (counts[s] != null) counts[s]++;
+    if (['volledig','gewisseld','keeper','toeschouwer','aanwezig'].includes(s)) aanwezig++;
+  });
+  const gespeeld = ids.filter(id => ['volledig','gewisseld','keeper','aanwezig'].includes(guAttendance[id])).length;
+
+  // Controle doelpunten vs. score van Dodeka
+  const goals   = sum(guGoals);
+  const leftEl  = document.getElementById('gu-score-left');
+  const rightEl = document.getElementById('gu-score-right');
+  const raw     = guIsThuis ? leftEl?.value : rightEl?.value;
+  let goalCell  = `${goals}`;
+  if (raw !== undefined && raw !== '' && !isNaN(+raw)) {
+    const score = +raw;
+    const ok    = goals === score;
+    const tip   = ok ? 'Doelpunten komen overeen met de score'
+                     : `Opgelet: ${goals} doelpunt(en) aangeduid, maar Dodeka scoorde ${score} (eigen doelpunt tegenstander?)`;
+    goalCell = `<span title="${tip}" style="color:${ok ? '#198754' : '#fd7e14'}">${goals}<span style="font-weight:400">/${score}</span>${ok ? '' : ' ⚠️'}</span>`;
+  }
+
+  const statusBits = GU_STATUSES
+    .map(({ v, label, icon }) => `<span title="${label}" style="white-space:nowrap">${icon}&nbsp;${counts[v]}</span>`)
+    .join(' ');
+
+  const sep = '<span class="text-muted mx-1">·</span>';
+  tf.innerHTML = `
+    <div class="d-flex flex-wrap align-items-center gap-1" style="font-size:.85rem">
+      <strong>${aanwezig} aanwezig</strong>
+      <span class="text-muted">(${gespeeld} gespeeld)</span>
+      <span class="ms-1 d-flex gap-2 flex-wrap">${statusBits}</span>
+    </div>
+    <div class="d-flex flex-wrap align-items-center mt-1" style="font-size:.9rem;font-weight:600">
+      <span title="Doelpunten">⚽ ${goalCell}</span>${sep}
+      <span title="Assists">🅰 ${sum(guAssists)}</span>${sep}
+      <span title="Gele kaarten">🟡 ${sum(guGeel)}</span>${sep}
+      <span title="Rode kaarten">🔴 ${sum(guRood)}</span>${sep}
+      <span title="Man of the Match">⭐ ${guMotm.size}</span>
+    </div>`;
 }
 
 function guToggleAanw(playerId, status) {
@@ -721,6 +779,7 @@ function guToggleAanw(playerId, status) {
 function guToggleMotm(playerId, checked) {
   if (checked) guMotm.add(playerId);
   else         guMotm.delete(playerId);
+  guUpdateTotals();
 }
 
 // ── Sync historical_season_stats after editing match stats ────

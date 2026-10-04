@@ -305,13 +305,13 @@
             <label class="form-label mb-0 fw-semibold" style="white-space:nowrap">Score:</label>
             <div class="text-center">
               <div id="gu-label-left" class="text-muted" style="font-size:.68rem;line-height:1.2;">Dodeka</div>
-              <input type="number" id="gu-score-left" class="form-control form-control-sm text-center"
+              <input type="number" id="gu-score-left" class="form-control form-control-sm text-center" oninput="guUpdateTotals()"
                      style="width:62px" min="0" placeholder="–">
             </div>
             <span class="fw-bold fs-5">–</span>
             <div class="text-center">
               <div id="gu-label-right" class="text-muted" style="font-size:.68rem;line-height:1.2;"></div>
-              <input type="number" id="gu-score-right" class="form-control form-control-sm text-center"
+              <input type="number" id="gu-score-right" class="form-control form-control-sm text-center" oninput="guUpdateTotals()"
                      style="width:62px" min="0" placeholder="–">
             </div>
           </div>
